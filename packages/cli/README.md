@@ -1,5 +1,13 @@
 # WatchLLM CLI
 
+```text
+ __        __    _       _     _     _     __  __
+ \ \      / /_ _| |_ ___| |__ | |   | |   |  \/  |
+  \ \ /\ / / _` | __/ __| '_ \| |   | |   | |\/| |
+   \ V  V / (_| | || (__| | | | |___| |___| |  | |
+    \_/\_/ \__,_|\__\___|_| |_|_____|_____|_|  |_|
+```
+
 The WatchLLM CLI is the local deterministic enforcement engine.
 
 It is responsible for:
