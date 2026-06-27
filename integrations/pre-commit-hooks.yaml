@@ -1,0 +1,32 @@
+# WatchLLM pre-commit hook definitions.
+#
+# Usage:
+# 1. Add to your project's .pre-commit-config.yaml:
+#
+#    repos:
+#      - repo: https://github.com/watchllm/watchllm
+#        rev: v0.1.0
+#        hooks:
+#          - id: watchllm-kernel
+#
+# 2. Install the hook runner: pip install pre-commit
+# 3. Install hooks in your repo:  pre-commit install
+
+- id: watchllm-kernel
+  name: WatchLLM Kernel Governance Check
+  description: |
+    Runs the WatchLLM deterministic kernel on staged TypeScript and JavaScript
+    files. Blocks the commit if any governance rule (secrets, forbidden imports,
+    boundary violations, auth-flow ordering) is violated.
+  language: python
+  entry: watchllm-kernel
+  args: [check, --json]
+  # Pass each staged file as --filepath <file> via the pre-commit framework
+  pass_filenames: true
+  # Override entry to use filepath flag:
+  entry: watchllm-kernel check --json --filepath
+  types_or: [javascript, ts, tsx]
+  additional_dependencies: [watchllm-kernel]
+  # Fail-open: if the kernel is not installed, the hook warns but does not block.
+  # To enforce strict mode, remove the following line:
+  # fail_fast: false

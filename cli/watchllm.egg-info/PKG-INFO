@@ -1,0 +1,41 @@
+Metadata-Version: 2.4
+Name: watchllm
+Version: 0.1.0
+Summary: Unified entry point for the WatchLLM developer toolchain.
+Author: WatchLLM
+License: Apache-2.0
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: watchllm-kernel
+Requires-Dist: rich>=13.7.0
+
+# watchllm CLI
+
+Unified developer entry point for the WatchLLM toolchain.
+
+## Install
+
+```bash
+pip install -e d:/watchllm/cli
+```
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `watchllm init [dir]` | Generate a default `.watchllm.yaml` in `dir` |
+| `watchllm evaluate <file>` | Run the kernel on a source file |
+| `watchllm status` | Check health of all installed WatchLLM subsystems |
+
+## Examples
+
+```bash
+# Initialize config in current dir
+watchllm init
+
+# Evaluate a TypeScript file
+watchllm evaluate src/auth/handler.ts
+
+# Check everything is installed
+watchllm status
+```

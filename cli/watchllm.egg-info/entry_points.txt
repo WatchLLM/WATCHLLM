@@ -1,0 +1,2 @@
+[console_scripts]
+watchllm = cli:main

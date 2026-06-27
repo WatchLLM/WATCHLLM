@@ -1,0 +1,61 @@
+# .github/workflows/watchllm.yml (example usage)
+# Copy this file into your own repo's .github/workflows/ directory.
+#
+# This action installs the WatchLLM kernel and evaluates all changed
+# TypeScript/JavaScript files in a pull request, blocking merge if any
+# files violate governance rules.
+
+name: WatchLLM Governance Check
+
+on:
+  pull_request:
+    branches: ["main", "master"]
+  push:
+    branches: ["main", "master"]
+
+jobs:
+  watchllm:
+    name: Kernel Evaluation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed to determine changed files
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install WatchLLM kernel
+        run: |
+          # Install directly from the WatchLLM monorepo.
+          # For public use, replace with: pip install watchllm-kernel
+          pip install watchllm-kernel
+
+      - name: Get changed JS/TS files
+        id: changed-files
+        run: |
+          # Get list of changed .js/.ts/.tsx files vs the base branch
+          FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            | grep -E '\.(js|ts|tsx|mjs|cjs)$' || true)
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Run WatchLLM on changed files
+        if: steps.changed-files.outputs.files != ''
+        run: |
+          FAILED=0
+          for FILE in ${{ steps.changed-files.outputs.files }}; do
+            echo "Checking: $FILE"
+            watchllm-kernel check --filepath "$FILE" --json || FAILED=1
+          done
+          if [ $FAILED -ne 0 ]; then
+            echo "WatchLLM: one or more files failed governance checks."
+            exit 1
+          fi
+
+      - name: No JS/TS files changed
+        if: steps.changed-files.outputs.files == ''
+        run: echo "No JS/TS files changed. Skipping kernel evaluation."

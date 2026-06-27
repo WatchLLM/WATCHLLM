@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "watchllm"
+version = "0.1.0"
+description = "Unified entry point for the WatchLLM developer toolchain."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "WatchLLM" }
+]
+dependencies = [
+  "watchllm-kernel",
+  "rich>=13.7.0"
+]
+
+[project.scripts]
+watchllm = "cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cli*"]
