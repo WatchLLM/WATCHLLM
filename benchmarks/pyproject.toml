@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "watchllm-benchmarks"
+version = "0.1.0"
+description = "Ecosystem-wide performance and regression benchmarking."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "WatchLLM" }
+]
+keywords = [
+  "watchllm",
+  "benchmarks",
+  "performance",
+  "regression-testing"
+]
+classifiers = [
+  "Development Status :: 1 - Planning",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: System :: Benchmark"
+]
+dependencies = [
+  "pytest>=7.0.0",
+  "click>=8.1.0",
+]
+
+[project.scripts]
+watchllm-benchmarks = "benchmarks.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

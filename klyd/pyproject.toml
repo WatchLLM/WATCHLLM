@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "watchllm-klyd"
+version = "0.1.0"
+description = "Architectural memory system for autonomous coding agents."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "WatchLLM" }
+]
+keywords = [
+  "watchllm",
+  "klyd",
+  "architectural-memory",
+  "agent-governance"
+]
+classifiers = [
+  "Development Status :: 1 - Planning",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Database"
+]
+dependencies = [
+  "click>=8.1.0",
+  "anthropic>=0.34.0",
+]
+
+[project.scripts]
+kl = "klyd.cli:main"
+klyd = "klyd.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

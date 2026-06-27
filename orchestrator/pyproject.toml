@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["orchestrator*"]
+
+[project]
+name = "watchllm-orchestrator"
+version = "0.1.0"
+description = "WatchLLM runtime orchestration and model routing."
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.0",
+    "pyjwt>=2.0"
+]
+
+[project.scripts]
+watchllm-orchestrator = "orchestrator.cli:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

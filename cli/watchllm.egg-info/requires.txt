@@ -1,2 +1,0 @@
-watchllm-kernel
-rich>=13.7.0
