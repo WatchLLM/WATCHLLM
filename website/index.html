@@ -54,15 +54,9 @@
       <div class="hero-bg-particles" id="hero-particles"></div>
       <div class="hero-scanline"></div>
 
-      <div class="hero-grid section-container">
-        <div class="hero-main">
-          <div class="hero-kicker">
-            <span class="hero-kicker-dot"></span>
-            <span class="hero-kicker-text">OPEN LETTER TO EVERY DEVELOPER LETTING AN LLM WRITE CODE UNSUPERVISED</span>
-          </div>
-
+      <div class="hero-content section-container">
         <!-- ASCII ART -->
-        <div class="ascii-wrapper glitch-wrapper" data-text="WATCHLLM">
+        <div class="ascii-wrapper" data-text="WATCHLLM">
 <pre class="ascii-art" id="ascii-art">
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░  ░░░░  ░░░░░░░░░      ░░░░░░░░░        ░░░░░░░░░      ░░░░░░░░░  ░░░░  ░░░░░░░░  ░░░░░░░░░░░░░░  ░░░░░░░░░░░░░░  ░░░░  ░░░░░░░
@@ -80,50 +74,42 @@
           <span class="hero-title-real">IS A FUCKING LIAR.</span>
         </h1>
 
-          <p class="hero-subtitle">
-            It hallucinates. It confabulates. It will casually slip an AWS key into your codebase at 3 AM and not even remember doing it. <span class="highlight">Agents are probabilistic. Infrastructure cannot be.</span>
-          </p>
-
-          <div class="hero-actions">
-            <div class="terminal-install-brutal" id="install-box">
-              <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm-cli</span>
-              <span class="cmd-sub">evaluates in &lt;10ms. blocks before disk. zero trust.</span>
-              <div class="copy-feedback">COPIED. NOW GO INSTALL IT.</div>
-            </div>
-            <a href="https://github.com/kaadipranav/WatchLLM" class="btn-brutal btn-ghost" target="_blank">STAR ON GITHUB (COWARD)</a>
+        <div class="hero-actions">
+          <div class="terminal-install-brutal" id="install-box">
+            <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm</span>
+            <span class="cmd-sub">evaluates in &lt;10ms. blocks before disk. zero trust.</span>
+            <div class="copy-feedback">COPIED. NOW GO INSTALL IT.</div>
           </div>
-
-          <div class="hero-stat-bar">
-            <div class="hero-stat">
-              <span class="hero-stat-num" id="stat-blocked">0</span>
-              <span class="hero-stat-label">SAVES BLOCKED TODAY*</span>
-            </div>
-            <div class="hero-stat">
-              <span class="hero-stat-num">&lt;10ms</span>
-              <span class="hero-stat-label">EVALUATION LATENCY</span>
-            </div>
-            <div class="hero-stat">
-              <span class="hero-stat-num">0</span>
-              <span class="hero-stat-label">NETWORK CALLS</span>
-            </div>
-            <div class="hero-stat">
-              <span class="hero-stat-num">100%</span>
-              <span class="hero-stat-label">DETERMINISTIC</span>
-            </div>
-          </div>
-          <p class="hero-stat-disclaimer">* totally made up. but you get the point.</p>
+          <a href="https://github.com/kaadipranav/WatchLLM" class="btn-brutal btn-ghost" target="_blank">STAR ON GITHUB (COWARD)</a>
         </div>
-
-        <aside class="hero-terminal" id="hero-terminal" aria-label="Live interception feed">
-          <div class="hero-terminal-header">
-            <span class="hero-terminal-title">watchllm — live intercept</span>
-            <span class="hero-terminal-status"><span class="hero-terminal-dot"></span> ENFORCING</span>
-          </div>
-          <div class="hero-terminal-body" id="hero-terminal-log"></div>
-          <div class="hero-terminal-footer">kernel v0.1.0 · 0 network calls · fail-open disabled</div>
-        </aside>
       </div>
     </header>
+
+    <!-- ===== STAT STRIP ===== -->
+    <div class="stat-strip">
+      <div class="stat-strip-inner section-container">
+        <div class="stat-strip-item">
+          <span class="stat-strip-num" id="stat-blocked">124,793,571</span>
+          <span class="stat-strip-label">SAVES BLOCKED*</span>
+        </div>
+        <div class="stat-strip-sep">·</div>
+        <div class="stat-strip-item">
+          <span class="stat-strip-num">&lt;10ms</span>
+          <span class="stat-strip-label">EVALUATION LATENCY</span>
+        </div>
+        <div class="stat-strip-sep">·</div>
+        <div class="stat-strip-item">
+          <span class="stat-strip-num">0</span>
+          <span class="stat-strip-label">NETWORK CALLS</span>
+        </div>
+        <div class="stat-strip-sep">·</div>
+        <div class="stat-strip-item">
+          <span class="stat-strip-num">100%</span>
+          <span class="stat-strip-label">DETERMINISTIC</span>
+        </div>
+        <div class="stat-strip-disclaimer">* totally made up. but you get the point.</div>
+      </div>
+    </div>
 
     <!-- ===== SECTION 1: THE HORROR (Problem / Agitation) ===== -->
     <section id="the-horror" class="section section--horror reveal">
@@ -513,7 +499,7 @@
 
         <div class="cta-terminal">
           <div class="terminal-install-brutal terminal-install-brutal--big" id="install-box-2">
-            <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm-cli</span>
+            <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm</span>
             <span class="cmd-sub">then: <span class="highlight">watchllm init</span> in any repo. 30 seconds. That's it.</span>
             <div class="copy-feedback">GOOD. NOW PASTE IT IN YOUR TERMINAL.</div>
           </div>
@@ -521,7 +507,7 @@
 
         <p class="cta-bottom-text">
           <a href="https://github.com/kaadipranav/WatchLLM" target="_blank" class="highlight">STAR ON GITHUB</a> &nbsp;·&nbsp;
-          <a href="#" class="fg-dim">READ THE DOCS</a> &nbsp;·&nbsp;
+          <a href="/docs.html" class="fg-dim">READ THE DOCS</a> &nbsp;·&nbsp;
           <span class="fg-dim">v0.1.0 — EARLY, AGGRESSIVE, HUNGRY</span>
         </p>
       </div>
@@ -536,7 +522,7 @@
         </div>
         <div class="footer-links">
           <a href="https://github.com/kaadipranav/WatchLLM" target="_blank">GITHUB</a>
-          <a href="#">DOCS</a>
+          <a href="/docs.html">DOCS</a>
           <a href="#">NPM</a>
         </div>
         <div class="footer-tagline">

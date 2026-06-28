@@ -6,7 +6,7 @@ function setupInstallBox(id: string) {
   if (!box) return
   const feedback = box.querySelector('.copy-feedback')
   box.addEventListener('click', () => {
-    navigator.clipboard.writeText('pip install watchllm-cli')
+    navigator.clipboard.writeText('pip install watchllm')
     if (feedback) {
       feedback.classList.add('show')
       setTimeout(() => feedback.classList.remove('show'), 1800)
@@ -207,7 +207,7 @@ console.log(
   ''
 )
 console.log(
-  '%c>%c pip install watchllm-cli',
+  '%c>%c pip install watchllm',
   'color: #ccff00;',
   'color: #fff;'
 )

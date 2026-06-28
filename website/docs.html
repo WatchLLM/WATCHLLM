@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchLLM — Documentation</title>
+    <meta name="description" content="Detailed technical documentation and reference guide for the WatchLLM deterministic local write-path governance toolchain." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body class="crt-overlay docs-body">
+
+    <!-- ===== NAV ===== -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-logo">
+        <span class="nav-pulse"></span>
+        WATCHLLM_<span class="nav-status">[DOCS]</span>
+      </div>
+      
+      <!-- Mobile hamburger -->
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle Navigation Menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+
+      <div class="nav-links nav-links-desktop">
+        <a href="/index.html">LANDING</a>
+        <a href="https://github.com/kaadipranav/WatchLLM" target="_blank">GITHUB</a>
+        <a href="/index.html#do-it" class="btn-brutal">INSTALL</a>
+      </div>
+    </nav>
+
+    <!-- ===== MAIN CONTENT CONTAINER ===== -->
+    <div class="docs-container">
+      
+      <!-- SIDEBAR -->
+      <aside class="docs-sidebar" id="docs-sidebar">
+        <!-- Search -->
+        <div class="docs-search-wrapper">
+          <input type="text" id="docs-search" class="docs-search-input" placeholder="SEARCH DOCS... [CTRL + /]" autocomplete="off" />
+          <span class="docs-search-clear" id="docs-search-clear">&times;</span>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="docs-nav" id="docs-nav">
+          <!-- Navigation links will be dynamically populated or hardcoded.
+               Let's hardcode them for SEO and structural clean-ness, then active-state them via JS. -->
+          <div class="nav-group">
+            <div class="nav-group-title">01. INTRODUCTION</div>
+            <a href="#welcome" class="nav-item active" data-page="welcome">
+              <span class="nav-item-num">1.1</span> Welcome & Philosophy
+            </a>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-group-title">02. INTERFACE</div>
+            <a href="#cli" class="nav-item" data-page="cli">
+              <span class="nav-item-num">2.1</span> CLI Subsystem
+            </a>
+            <a href="#schema" class="nav-item" data-page="schema">
+              <span class="nav-item-num">2.2</span> Config Schemas & JSON
+            </a>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-group-title">03. SECURITY KERNEL</div>
+            <a href="#kernel" class="nav-item" data-page="kernel">
+              <span class="nav-item-num">3.1</span> Write-Path Engine
+            </a>
+            <a href="#rules" class="nav-item" data-page="rules">
+              <span class="nav-item-num">3.2</span> AST Governance Rules
+            </a>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-group-title">04. PERSISTENT SYSTEM</div>
+            <a href="#klyd" class="nav-item" data-page="klyd">
+              <span class="nav-item-num">4.1</span> Klyd (Architectural Memory)
+            </a>
+            <a href="#runtime" class="nav-item" data-page="runtime">
+              <span class="nav-item-num">4.2</span> Rust & Wasm Substrate
+            </a>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-group-title">05. QUALITY & AUDIT</div>
+            <a href="#replay" class="nav-item" data-page="replay">
+              <span class="nav-item-num">5.1</span> Observability & Replay
+            </a>
+            <a href="#reliability" class="nav-item" data-page="reliability">
+              <span class="nav-item-num">5.2</span> Reliability & Stress Testing
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- DOCS READ AREA -->
+      <main class="docs-content" id="docs-content">
+        <!-- Search Results overlay wrapper -->
+        <div id="search-results-container" class="search-results-container hidden">
+          <h2 class="brutal-text section-title"><span class="highlight">SEARCH RESULTS</span></h2>
+          <div class="search-results-list" id="search-results-list"></div>
+        </div>
+
+        <!-- Active page rendering container -->
+        <div id="docs-page-viewer">
+          <!-- Dynamically populated by JS based on selection/hash -->
+          <div class="docs-loading">INITIALIZING KERNEL DOCS...</div>
+        </div>
+      </main>
+
+    </div>
+
+    <!-- Mobile Navigation Drawer Overlay -->
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+
+    <script type="module" src="/src/docs.ts"></script>
+  </body>
+</html>
