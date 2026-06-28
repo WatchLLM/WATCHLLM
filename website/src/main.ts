@@ -16,31 +16,56 @@ function setupInstallBox(id: string) {
 setupInstallBox('install-box')
 setupInstallBox('install-box-2')
 
-// ─── ASCII GLITCH ─────────────────────────────────────────
-const asciiArt = document.getElementById('ascii-art') as HTMLPreElement | null
-if (asciiArt && asciiArt.textContent) {
-  const originalText = asciiArt.textContent
-  const glitchChars = '░▒▓█▀▄▌▐■□▪▫●○◘◙◦☰☱☲☳☴☵☶☷⚡⌁⌂⎔⎓⏣⬡⬢⬟⬠⬡'
+// ─── WORDMARK GLITCH ──────────────────────────────────────
+const heroWordmark = document.getElementById('hero-wordmark')
+if (heroWordmark) {
+  setInterval(() => {
+    if (Math.random() > 0.12) return
+    heroWordmark.classList.add('glitching')
+    setTimeout(() => heroWordmark.classList.remove('glitching'), 150)
+  }, 2200 + Math.random() * 2000)
+}
+
+// ─── HERO LIVE TERMINAL ───────────────────────────────────
+const terminalLog = document.getElementById('hero-terminal-log')
+if (terminalLog) {
+  const events = [
+    { type: 'block', text: 'BLOCK  src/utils/helpers.ts  secret_literal  sk_live_51H8****' },
+    { type: 'block', text: 'BLOCK  src/auth/login.ts     boundaries      ../../db/internal' },
+    { type: 'allow', text: 'ALLOW  src/components/Button.tsx  all rules pass  4.1ms' },
+    { type: 'block', text: 'BLOCK  src/api/debug.ts      forbidden_import  child_process' },
+    { type: 'block', text: 'BLOCK  .env.local            secret_literal  AKIAIOSFOD****' },
+    { type: 'allow', text: 'ALLOW  src/hooks/useAuth.ts  all rules pass  2.8ms' },
+    { type: 'block', text: 'BLOCK  src/routes/admin.ts   auth_flow       no middleware' },
+    { type: 'block', text: 'BLOCK  config/db.ts          secret_literal  postgres://root:***' },
+    { type: 'dim', text: '--- agent save intercepted. evaluating AST... ---' },
+    { type: 'block', text: 'BLOCK  src/lib/eval.ts       forbidden_import  vm' },
+  ]
+
+  let idx = 0
+  const maxLines = 14
+
+  function pushLine(event: (typeof events)[0]) {
+    if (!terminalLog) return
+    const line = document.createElement('div')
+    line.className = `hero-terminal-line hero-terminal-line--${event.type}`
+    const ms = (Math.random() * 9 + 1).toFixed(1)
+    line.textContent = event.type === 'dim'
+      ? event.text
+      : `${event.text}  ${ms}ms`
+    terminalLog.appendChild(line)
+    while (terminalLog.children.length > maxLines) {
+      terminalLog.removeChild(terminalLog.firstChild!)
+    }
+  }
+
+  pushLine({ type: 'dim', text: 'watchllm kernel online. enforcing ruleset v0.1.0' })
+  pushLine({ type: 'dim', text: 'listening on onWillSaveTextDocument...' })
 
   setInterval(() => {
-    if (Math.random() > 0.08) return
-
-    const glitched = originalText.split('')
-    const numGlitches = Math.floor(Math.random() * 25) + 5
-    for (let i = 0; i < numGlitches; i++) {
-      const pos = Math.floor(Math.random() * glitched.length)
-      if (glitched[pos] !== '\n' && glitched[pos] !== ' ') {
-        glitched[pos] = glitchChars[Math.floor(Math.random() * glitchChars.length)]
-      }
-    }
-    asciiArt.textContent = glitched.join('')
-    asciiArt.classList.add('glitching')
-
-    setTimeout(() => {
-      asciiArt.textContent = originalText
-      asciiArt.classList.remove('glitching')
-    }, 40 + Math.random() * 120)
-  }, 180)
+    pushLine(events[idx % events.length])
+    idx++
+  }, 900 + Math.random() * 700)
 }
 
 // ─── HERO PARTICLE FIELD ──────────────────────────────────
@@ -72,7 +97,7 @@ if (particleCanvas) {
       }
     }
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 50; i++) {
       particles.push(spawnParticle())
     }
 
@@ -83,7 +108,7 @@ if (particleCanvas) {
       ctx.textAlign = 'center'
 
       particles = particles.filter(p => p.life < p.maxLife)
-      while (particles.length < 40) {
+      while (particles.length < 50) {
         particles.push(spawnParticle())
       }
 
@@ -93,7 +118,7 @@ if (particleCanvas) {
         p.life++
 
         const alpha = 1 - p.life / p.maxLife
-        ctx.fillStyle = `rgba(204, 255, 0, ${alpha * 0.4})`
+        ctx.fillStyle = `rgba(204, 255, 0, ${alpha * 0.35})`
         ctx.fillText(p.char, p.x, p.y)
 
         if (p.y < -10) {
@@ -115,13 +140,27 @@ if (statBlocked) {
   const baseVal = 8472
   function updateCounter() {
     const val = baseVal + Math.floor((Date.now() / 1000) * 0.07)
-    const formatted = val.toLocaleString()
-    statBlocked!.textContent = formatted
-    requestAnimationFrame(() => {
-      setTimeout(updateCounter, 2000 + Math.random() * 4000)
-    })
+    statBlocked!.textContent = val.toLocaleString()
+    setTimeout(updateCounter, 2000 + Math.random() * 4000)
   }
   updateCounter()
+}
+
+// ─── SCROLL REVEAL ────────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal')
+if (revealEls.length) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible')
+          observer.unobserve(entry.target)
+        }
+      }
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  )
+  revealEls.forEach(el => observer.observe(el))
 }
 
 // ─── SMOOTH SCROLLING (INSTANT FOR BRUTALIST FEEL) ────────
@@ -142,13 +181,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ─── NAV SCROLL EFFECT ────────────────────────────────────
 const navbar = document.getElementById('navbar')
 window.addEventListener('scroll', () => {
-  const currentScroll = window.scrollY
   if (navbar) {
-    if (currentScroll > 100) {
-      navbar.style.borderBottomColor = 'var(--accent)'
-    } else {
-      navbar.style.borderBottomColor = 'var(--border)'
-    }
+    navbar.style.borderBottomColor = window.scrollY > 100 ? 'var(--accent)' : 'var(--border)'
   }
 })
 

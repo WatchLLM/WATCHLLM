@@ -15,22 +15,22 @@
     <!-- ===== MARQUEE: LIVE INTERCEPTION FEED ===== -->
     <div class="marquee-container">
       <div class="marquee marquee--top">
-        <span> BLOCKED · sk-live-**** · 14ms ago</span>
-        <span> BLOCKED · AKIAIOS**** · 3ms ago</span>
-        <span> BLOCKED · -----BEGIN RSA PRIVATE KEY----- · 8ms ago</span>
-        <span> BLOCKED · child_process.exec(userInput) · 1ms ago</span>
-        <span> BLOCKED · eval(untrusted) · 22ms ago</span>
-        <span> BLOCKED · password='admin123' · 6ms ago</span>
-        <span> BLOCKED · import * from '../../secrets' · 11ms ago</span>
-        <span> BLOCKED · mysql://root:password@prod · 4ms ago</span>
-        <span> BLOCKED · sk-live-**** · 14ms ago</span>
-        <span> BLOCKED · AKIAIOS**** · 3ms ago</span>
-        <span> BLOCKED · -----BEGIN RSA PRIVATE KEY----- · 8ms ago</span>
-        <span> BLOCKED · child_process.exec(userInput) · 1ms ago</span>
-        <span> BLOCKED · eval(untrusted) · 22ms ago</span>
-        <span> BLOCKED · password='admin123' · 6ms ago</span>
-        <span> BLOCKED · import * from '../../secrets' · 11ms ago</span>
-        <span> BLOCKED · mysql://root:password@prod · 4ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · sk-live-**** · 14ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · AKIAIOS**** · 3ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · -----BEGIN RSA PRIVATE KEY----- · 8ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · child_process.exec(userInput) · 1ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · eval(untrusted) · 22ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · password='admin123' · 6ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · import * from '../../secrets' · 11ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · mysql://root:password@prod · 4ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · sk-live-**** · 14ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · AKIAIOS**** · 3ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · -----BEGIN RSA PRIVATE KEY----- · 8ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · child_process.exec(userInput) · 1ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · eval(untrusted) · 22ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · password='admin123' · 6ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · import * from '../../secrets' · 11ms ago</span>
+        <span><em class="marquee-tag">BLOCKED</em> · mysql://root:password@prod · 4ms ago</span>
       </div>
     </div>
 
@@ -45,19 +45,21 @@
         <a href="#the-bouncer">THE BOUNCER</a>
         <a href="#receipts">RECEIPTS</a>
         <a href="#objections">COPE HARDER</a>
-        <a href="#do-it" class="btn-brutal">INSTALL ↓</a>
+        <a href="#do-it" class="btn-brutal">INSTALL</a>
       </div>
     </nav>
 
     <!-- ===== HERO ===== -->
     <header class="hero" id="hero">
       <div class="hero-bg-particles" id="hero-particles"></div>
+      <div class="hero-scanline"></div>
 
-      <div class="hero-content">
-        <div class="hero-kicker">
-          <span class="hero-kicker-icon">⚠</span>
-          <span class="hero-kicker-text">OPEN LETTER TO EVERY DEVELOPER LETTING AN LLM WRITE CODE UNSUPERVISED</span>
-        </div>
+      <div class="hero-grid section-container">
+        <div class="hero-main">
+          <div class="hero-kicker">
+            <span class="hero-kicker-dot"></span>
+            <span class="hero-kicker-text">OPEN LETTER TO EVERY DEVELOPER LETTING AN LLM WRITE CODE UNSUPERVISED</span>
+          </div>
 
         <!-- ASCII ART -->
         <div class="ascii-wrapper glitch-wrapper" data-text="WATCHLLM">
@@ -78,53 +80,63 @@
           <span class="hero-title-real">IS A FUCKING LIAR.</span>
         </h1>
 
-        <p class="hero-subtitle">
-          It hallucinates. It confabulates. It will casually slip an AWS key into your codebase at 3 AM and not even remember doing it. <span class="highlight">Agents are probabilistic. Infrastructure cannot be.</span>
-        </p>
+          <p class="hero-subtitle">
+            It hallucinates. It confabulates. It will casually slip an AWS key into your codebase at 3 AM and not even remember doing it. <span class="highlight">Agents are probabilistic. Infrastructure cannot be.</span>
+          </p>
 
-        <div class="hero-actions">
-          <div class="terminal-install-brutal" id="install-box">
-            <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm-cli</span>
-            <span class="cmd-sub">evaluates in &lt;10ms. blocks before disk. zero trust.</span>
-            <div class="copy-feedback">COPIED. NOW GO INSTALL IT.</div>
+          <div class="hero-actions">
+            <div class="terminal-install-brutal" id="install-box">
+              <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm-cli</span>
+              <span class="cmd-sub">evaluates in &lt;10ms. blocks before disk. zero trust.</span>
+              <div class="copy-feedback">COPIED. NOW GO INSTALL IT.</div>
+            </div>
+            <a href="https://github.com/kaadipranav/WatchLLM" class="btn-brutal btn-ghost" target="_blank">STAR ON GITHUB (COWARD)</a>
           </div>
-          <a href="https://github.com/kaadipranav/WatchLLM" class="btn-brutal btn-ghost" target="_blank">STAR ON GITHUB (COWARD)</a>
+
+          <div class="hero-stat-bar">
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="stat-blocked">0</span>
+              <span class="hero-stat-label">SAVES BLOCKED TODAY*</span>
+            </div>
+            <div class="hero-stat">
+              <span class="hero-stat-num">&lt;10ms</span>
+              <span class="hero-stat-label">EVALUATION LATENCY</span>
+            </div>
+            <div class="hero-stat">
+              <span class="hero-stat-num">0</span>
+              <span class="hero-stat-label">NETWORK CALLS</span>
+            </div>
+            <div class="hero-stat">
+              <span class="hero-stat-num">100%</span>
+              <span class="hero-stat-label">DETERMINISTIC</span>
+            </div>
+          </div>
+          <p class="hero-stat-disclaimer">* totally made up. but you get the point.</p>
         </div>
 
-        <div class="hero-stat-bar">
-          <div class="hero-stat">
-            <span class="hero-stat-num" id="stat-blocked">0</span>
-            <span class="hero-stat-label">SAVES BLOCKED TODAY*</span>
+        <aside class="hero-terminal" id="hero-terminal" aria-label="Live interception feed">
+          <div class="hero-terminal-header">
+            <span class="hero-terminal-title">watchllm — live intercept</span>
+            <span class="hero-terminal-status"><span class="hero-terminal-dot"></span> ENFORCING</span>
           </div>
-          <div class="hero-stat">
-            <span class="hero-stat-num">&lt;10ms</span>
-            <span class="hero-stat-label">EVALUATION LATENCY</span>
-          </div>
-          <div class="hero-stat">
-            <span class="hero-stat-num">0</span>
-            <span class="hero-stat-label">NETWORK CALLS</span>
-          </div>
-          <div class="hero-stat">
-            <span class="hero-stat-num">100%</span>
-            <span class="hero-stat-label">DETERMINISTIC</span>
-          </div>
-        </div>
-        <p class="hero-stat-disclaimer">* totally made up. but you get the point.</p>
+          <div class="hero-terminal-body" id="hero-terminal-log"></div>
+          <div class="hero-terminal-footer">kernel v0.1.0 · 0 network calls · fail-open disabled</div>
+        </aside>
       </div>
     </header>
 
     <!-- ===== SECTION 1: THE HORROR (Problem / Agitation) ===== -->
-    <section id="the-horror" class="section section--horror">
+    <section id="the-horror" class="section section--horror reveal">
       <div class="section-container">
-        <h2 class="section-title brutal-text">
+        <h2 class="section-title brutal-text reveal">
           <span class="section-label">01</span>
           YOU ARE ONE `git push` AWAY FROM DISASTER
         </h2>
 
         <div class="horror-grid">
           <!-- Scenario 1 -->
-          <div class="horror-card">
-            <div class="horror-card-icon">🔑</div>
+          <div class="horror-card reveal">
+            <div class="horror-card-icon" data-icon="KEY"></div>
             <div class="horror-card-time">T-00:00:03</div>
             <h3 class="horror-card-title">THE 3 AM PAGER</h3>
             <p class="horror-card-body">
@@ -139,8 +151,8 @@
           </div>
 
           <!-- Scenario 2 -->
-          <div class="horror-card">
-            <div class="horror-card-icon">💣</div>
+          <div class="horror-card reveal">
+            <div class="horror-card-icon" data-icon="RCE"></div>
             <div class="horror-card-time">T-00:00:01</div>
             <h3 class="horror-card-title">THE HELPFUL BACKDOOR</h3>
             <p class="horror-card-body">
@@ -155,8 +167,8 @@
           </div>
 
           <!-- Scenario 3 -->
-          <div class="horror-card">
-            <div class="horror-card-icon">🧨</div>
+          <div class="horror-card reveal">
+            <div class="horror-card-icon" data-icon="!!!"></div>
             <div class="horror-card-time">T-00:00:00</div>
             <h3 class="horror-card-title">THE TRUST FALL (THAT FAILED)</h3>
             <p class="horror-card-body">
@@ -194,32 +206,32 @@
         <!-- THE FLOW -->
         <div class="flow-visual">
           <div class="flow-node">
-            <div class="flow-node-icon">🤖</div>
+            <div class="flow-node-icon" data-icon="AGT"></div>
             <div class="flow-node-label">AGENT WRITES CODE</div>
             <div class="flow-node-sub">Cursor / Copilot / Aider / Claude Code</div>
           </div>
-          <div class="flow-arrow">→</div>
+          <div class="flow-arrow">&gt;</div>
           <div class="flow-node">
-            <div class="flow-node-icon">⌨</div>
+            <div class="flow-node-icon" data-icon="SAV"></div>
             <div class="flow-node-label">SAVE EVENT</div>
             <div class="flow-node-sub">VS Code onWillSaveTextDocument</div>
           </div>
-          <div class="flow-arrow">→</div>
+          <div class="flow-arrow">&gt;</div>
           <div class="flow-node flow-node--watchllm">
             <div class="flow-node-glow"></div>
-            <div class="flow-node-icon">🛡</div>
+            <div class="flow-node-icon" data-icon="WLL"></div>
             <div class="flow-node-label">WATCHLLM</div>
-            <div class="flow-node-sub">AST Parse → Rule Engine → Decision</div>
+            <div class="flow-node-sub">AST Parse > Rule Engine > Decision</div>
           </div>
-          <div class="flow-arrow flow-arrow--split">→</div>
+          <div class="flow-arrow flow-arrow--split">&gt;</div>
           <div class="flow-split">
             <div class="flow-node flow-node--allow">
-              <div class="flow-node-icon">✓</div>
+              <div class="flow-node-icon" data-icon="OK"></div>
               <div class="flow-node-label">ALLOW</div>
               <div class="flow-node-sub">Code is clean. Save proceeds.</div>
             </div>
             <div class="flow-node flow-node--block">
-              <div class="flow-node-icon">✕</div>
+              <div class="flow-node-icon" data-icon="NO"></div>
               <div class="flow-node-label">BLOCK</div>
               <div class="flow-node-sub">Violation detected. Save denied. Agent humbled.</div>
             </div>
@@ -293,33 +305,33 @@
 
         <!-- Tech Stack -->
         <div class="stack-grid">
-          <div class="stack-item">
-            <div class="stack-icon">🦀</div>
+          <div class="stack-item reveal">
+            <div class="stack-icon" data-num="01"></div>
             <div class="stack-name">RUST KERNEL</div>
             <div class="stack-desc">Native performance. Zero-GC pauses. Compiles to WASM for in-browser and in-editor execution without spawning a Python process.</div>
           </div>
-          <div class="stack-item">
-            <div class="stack-icon">🌳</div>
+          <div class="stack-item reveal">
+            <div class="stack-icon" data-num="02"></div>
             <div class="stack-name">TREE-SITTER AST</div>
             <div class="stack-desc">Not regex. Not grep. Actual syntax trees. Distinguishes code from comments, strings from variables, intent from accident.</div>
           </div>
-          <div class="stack-item">
-            <div class="stack-icon">🧠</div>
+          <div class="stack-item reveal">
+            <div class="stack-icon" data-num="03"></div>
             <div class="stack-name">ARCHITECTURAL MEMORY (KLYD)</div>
             <div class="stack-desc">Extracts design decisions from your git history. Injects constraints into agent context windows. Your agents finally understand your architecture because we make them.</div>
           </div>
-          <div class="stack-item">
-            <div class="stack-icon">⏪</div>
+          <div class="stack-item reveal">
+            <div class="stack-icon" data-num="04"></div>
             <div class="stack-name">EXECUTION REPLAY</div>
             <div class="stack-desc">Full DAG replay engine. Trace every single tool call your agent made. Find the exact moment it hallucinated. Show it to your manager. Show it to your therapist.</div>
           </div>
-          <div class="stack-item">
-            <div class="stack-icon">🔬</div>
+          <div class="stack-item reveal">
+            <div class="stack-icon" data-num="05"></div>
             <div class="stack-name">ADVERSARIAL TESTING</div>
             <div class="stack-desc">We stress-test agents with prompt injection, tool abuse, and hallucination scenarios. 42 tests passing. Your agent has a reliability score. It's probably lower than you think.</div>
           </div>
-          <div class="stack-item">
-            <div class="stack-icon">🔌</div>
+          <div class="stack-item reveal">
+            <div class="stack-icon" data-num="06"></div>
             <div class="stack-name">ZERO DEPENDENCY ENFORCEMENT</div>
             <div class="stack-desc">No API keys required. No cloud. No telemetry. Works offline. Deterministic: same input = same output. Always. The way infrastructure should be.</div>
           </div>
@@ -353,7 +365,7 @@
         <div class="cli-window-brutal">
           <div class="cli-window-header">
             <span>watchllm evaluate --strict</span>
-            <span class="window-controls">[−][□][×]</span>
+            <span class="window-controls">[_][O][X]</span>
           </div>
           <div class="cli-window-body">
 <pre>
@@ -365,7 +377,7 @@
 ┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ secret_literal    │ <span class="pass-text">PASS</span>   │ No hardcoded credentials detected         │
 │ forbidden_import  │ <span class="pass-text">PASS</span>   │ All imports within allowlist              │
-│ boundaries        │ <span class="fail-text">BLOCK</span>  │ auth/login.ts → ../../db/internal/query.ts │
+│ boundaries        │ <span class="fail-text">BLOCK</span>  │ auth/login.ts > ../../db/internal/query.ts │
 │ auth_flow         │ <span class="pass-text">PASS</span>   │ Auth middleware confirmed                  │
 └───────────────────┴────────┴───────────────────────────────────────────┘
 
