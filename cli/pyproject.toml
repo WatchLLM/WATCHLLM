@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "watchllm"
 version = "0.1.0"
-description = "Unified entry point for the WatchLLM developer toolchain."
+description = "Unified entry point for the WatchLLM developer toolchain — deterministic runtime governance for autonomous coding agents."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
@@ -14,8 +14,12 @@ authors = [
 ]
 dependencies = [
   "watchllm-kernel",
-  "rich>=13.7.0"
+  "rich>=13.7.0",
+  "prompt-toolkit>=3.0.0",
 ]
+
+[project.optional-dependencies]
+completion = ["click>=8.0"]
 
 [project.scripts]
 watchllm = "cli:main"
