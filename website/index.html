@@ -4,41 +4,64 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- SEO Best Practices -->
-    <title>WatchLLM | Deterministic Runtime Governance</title>
-    <meta name="description" content="WatchLLM is a blazing fast Rust/Wasm runtime and Python engine that provides deterministic, policy-based governance for autonomous coding agents." />
-    
-    <!-- Fonts: Space Grotesk for brutalist headings, JetBrains Mono for raw data/code -->
+    <title>WatchLLM — Your AI Agent Is a Liar.</title>
+    <meta name="description" content="WatchLLM intercepts every save your AI coding agent makes. It runs deterministic AST-level security rules in under 10ms. If the code is dangerous, it never touches disk. Period." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
   </head>
   <body class="crt-overlay">
-    
-    <!-- Ticker Tape -->
+
+    <!-- ===== MARQUEE: LIVE INTERCEPTION FEED ===== -->
     <div class="marquee-container">
-      <div class="marquee">
-        <span>WARNING: AUTONOMOUS AGENT GOVERNANCE REQUIRED // ZERO-TRUST ARCHITECTURE // DETERMINISTIC EXECUTION // PREVENT CATASTROPHE // </span>
-        <span>WARNING: AUTONOMOUS AGENT GOVERNANCE REQUIRED // ZERO-TRUST ARCHITECTURE // DETERMINISTIC EXECUTION // PREVENT CATASTROPHE // </span>
+      <div class="marquee marquee--top">
+        <span> BLOCKED · sk-live-**** · 14ms ago</span>
+        <span> BLOCKED · AKIAIOS**** · 3ms ago</span>
+        <span> BLOCKED · -----BEGIN RSA PRIVATE KEY----- · 8ms ago</span>
+        <span> BLOCKED · child_process.exec(userInput) · 1ms ago</span>
+        <span> BLOCKED · eval(untrusted) · 22ms ago</span>
+        <span> BLOCKED · password='admin123' · 6ms ago</span>
+        <span> BLOCKED · import * from '../../secrets' · 11ms ago</span>
+        <span> BLOCKED · mysql://root:password@prod · 4ms ago</span>
+        <span> BLOCKED · sk-live-**** · 14ms ago</span>
+        <span> BLOCKED · AKIAIOS**** · 3ms ago</span>
+        <span> BLOCKED · -----BEGIN RSA PRIVATE KEY----- · 8ms ago</span>
+        <span> BLOCKED · child_process.exec(userInput) · 1ms ago</span>
+        <span> BLOCKED · eval(untrusted) · 22ms ago</span>
+        <span> BLOCKED · password='admin123' · 6ms ago</span>
+        <span> BLOCKED · import * from '../../secrets' · 11ms ago</span>
+        <span> BLOCKED · mysql://root:password@prod · 4ms ago</span>
       </div>
     </div>
 
-    <!-- Top Navigation -->
-    <nav class="navbar">
-      <div class="nav-logo">SYS.WATCHLLM_</div>
+    <!-- ===== NAV ===== -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-logo">
+        <span class="nav-pulse"></span>
+        WATCHLLM_<span class="nav-status">[ACTIVE]</span>
+      </div>
       <div class="nav-links">
-        <a href="#features" data-text="[FEATURES]">[FEATURES]</a>
-        <a href="#cli" data-text="[CLI]">[CLI]</a>
-        <a href="https://github.com/kaadipranav/WatchLLM" target="_blank" class="btn-brutal">[GITHUB.COM]</a>
+        <a href="#the-horror">THE HORROR</a>
+        <a href="#the-bouncer">THE BOUNCER</a>
+        <a href="#receipts">RECEIPTS</a>
+        <a href="#objections">COPE HARDER</a>
+        <a href="#do-it" class="btn-brutal">INSTALL ↓</a>
       </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="hero">
+    <!-- ===== HERO ===== -->
+    <header class="hero" id="hero">
+      <div class="hero-bg-particles" id="hero-particles"></div>
+
       <div class="hero-content">
+        <div class="hero-kicker">
+          <span class="hero-kicker-icon">⚠</span>
+          <span class="hero-kicker-text">OPEN LETTER TO EVERY DEVELOPER LETTING AN LLM WRITE CODE UNSUPERVISED</span>
+        </div>
+
+        <!-- ASCII ART -->
         <div class="ascii-wrapper glitch-wrapper" data-text="WATCHLLM">
-<pre class="ascii-art">
+<pre class="ascii-art" id="ascii-art">
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░  ░░░░  ░░░░░░░░░      ░░░░░░░░░        ░░░░░░░░░      ░░░░░░░░░  ░░░░  ░░░░░░░░  ░░░░░░░░░░░░░░  ░░░░░░░░░░░░░░  ░░░░  ░░░░░░░
 ▒▒▒▒▒▒▒  ▒  ▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ▒▒   ▒▒▒▒▒▒▒
@@ -48,122 +71,451 @@
 ██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 </pre>
         </div>
-        <h1 class="hero-title brutal-text">DETERMINISTIC<br>RUNTIME<br>GOVERNANCE</h1>
+
+        <h1 class="hero-title brutal-text">
+          YOUR AI AGENT<br>
+          <span class="hero-title-strike">IS YOUR CO-PILOT</span><br>
+          <span class="hero-title-real">IS A FUCKING LIAR.</span>
+        </h1>
+
         <p class="hero-subtitle">
-          &gt; FORCE MULTI-AGENT SYSTEMS TO COMPLY.
+          It hallucinates. It confabulates. It will casually slip an AWS key into your codebase at 3 AM and not even remember doing it. <span class="highlight">Agents are probabilistic. Infrastructure cannot be.</span>
         </p>
-        
+
         <div class="hero-actions">
           <div class="terminal-install-brutal" id="install-box">
-            <span class="cmd-line"><span class="accent-color">root@system:~$</span> pip install watchllm-cli</span>
-            <div class="copy-feedback">COPIED TO CLIPBOARD</div>
+            <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm-cli</span>
+            <span class="cmd-sub">evaluates in &lt;10ms. blocks before disk. zero trust.</span>
+            <div class="copy-feedback">COPIED. NOW GO INSTALL IT.</div>
+          </div>
+          <a href="https://github.com/kaadipranav/WatchLLM" class="btn-brutal btn-ghost" target="_blank">STAR ON GITHUB (COWARD)</a>
+        </div>
+
+        <div class="hero-stat-bar">
+          <div class="hero-stat">
+            <span class="hero-stat-num" id="stat-blocked">0</span>
+            <span class="hero-stat-label">SAVES BLOCKED TODAY*</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">&lt;10ms</span>
+            <span class="hero-stat-label">EVALUATION LATENCY</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">0</span>
+            <span class="hero-stat-label">NETWORK CALLS</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">100%</span>
+            <span class="hero-stat-label">DETERMINISTIC</span>
           </div>
         </div>
+        <p class="hero-stat-disclaimer">* totally made up. but you get the point.</p>
       </div>
     </header>
 
-    <!-- Data Grid Features -->
-    <section id="features" class="section">
+    <!-- ===== SECTION 1: THE HORROR (Problem / Agitation) ===== -->
+    <section id="the-horror" class="section section--horror">
       <div class="section-container">
-        <h2 class="section-title brutal-text">SYS.CAPABILITIES</h2>
-        
-        <div class="data-grid">
-          <div class="data-card">
-            <div class="data-header">
-              <span class="data-id">ID: 01</span>
-              <span class="data-tag">[ WASM_RUNTIME ]</span>
-            </div>
-            <h3 class="data-title">NATIVE RUST ENGINE</h3>
-            <p class="data-desc">High-performance Wasm runtime built in Rust. Enforce static boundaries natively inside the editor or browser without Python overhead.</p>
+        <h2 class="section-title brutal-text">
+          <span class="section-label">01</span>
+          YOU ARE ONE `git push` AWAY FROM DISASTER
+        </h2>
+
+        <div class="horror-grid">
+          <!-- Scenario 1 -->
+          <div class="horror-card">
+            <div class="horror-card-icon">🔑</div>
+            <div class="horror-card-time">T-00:00:03</div>
+            <h3 class="horror-card-title">THE 3 AM PAGER</h3>
+            <p class="horror-card-body">
+              Your AI agent just wrote<br>
+              <code>const STRIPE_KEY = "sk_live_51H8xj2..."</code><br>
+              into <code>src/utils/helpers.ts</code>.<br><br>
+              It was trying to "add payment support."<br>
+              It's been in your public repo for 6 hours.<br>
+              <span class="highlight">Someone in Minsk is running a $47,000 crypto arbitrage bot on your keys right now.</span>
+            </p>
+            <div class="horror-card-tag">SECRET LEAKAGE</div>
           </div>
-          
-          <div class="data-card">
-            <div class="data-header">
-              <span class="data-id">ID: 02</span>
-              <span class="data-tag">[ POLICIES ]</span>
-            </div>
-            <h3 class="data-title">DETERMINISTIC RULES</h3>
-            <p class="data-desc">Declare boundary violations, secret leakages, and forbidden imports statically in a strict <span class="highlight">.watchllm.yaml</span> configuration.</p>
+
+          <!-- Scenario 2 -->
+          <div class="horror-card">
+            <div class="horror-card-icon">💣</div>
+            <div class="horror-card-time">T-00:00:01</div>
+            <h3 class="horror-card-title">THE HELPFUL BACKDOOR</h3>
+            <p class="horror-card-body">
+              Agent: "I'll add a debug endpoint."<br><br>
+              <code>app.get('/debug', (req, res) => {<br>
+              &nbsp;&nbsp;res.send(eval(req.query.code))<br>
+              })</code><br><br>
+              It genuinely thought this was helpful.<br>
+              <span class="highlight">It just opened an RCE vector on your production server because you asked it to fix a typo.</span>
+            </p>
+            <div class="horror-card-tag">FORBIDDEN EXECUTION</div>
           </div>
-          
-          <div class="data-card">
-            <div class="data-header">
-              <span class="data-id">ID: 03</span>
-              <span class="data-tag">[ KLYD_MEMORY ]</span>
-            </div>
-            <h3 class="data-title">ARCHITECTURAL MEMORY</h3>
-            <p class="data-desc">Persistent state extraction via Anthropic LLMs. Commits are parsed, decisions injected directly into the agent's live context window.</p>
+
+          <!-- Scenario 3 -->
+          <div class="horror-card">
+            <div class="horror-card-icon">🧨</div>
+            <div class="horror-card-time">T-00:00:00</div>
+            <h3 class="horror-card-title">THE TRUST FALL (THAT FAILED)</h3>
+            <p class="horror-card-body">
+              You installed Cursor. You vibe-coded for 6 hours.<br>
+              You shipped 4,000 lines.<br>
+              You reviewed exactly 0 of them.<br><br>
+              <span class="highlight">Your agent imported `child_process` in 17 files, hardcoded 3 API tokens, and wired the auth module directly to the raw database layer. You don't know any of this happened. Yet.</span>
+            </p>
+            <div class="horror-card-tag">BOUNDARY VIOLATION</div>
           </div>
-          
-          <div class="data-card">
-            <div class="data-header">
-              <span class="data-id">ID: 04</span>
-              <span class="data-tag">[ REPLAY_DAG ]</span>
-            </div>
-            <h3 class="data-title">EXECUTION REPLAY</h3>
-            <p class="data-desc">A full Express/React directed acyclic graph replay engine. Visualize exact node failures when autonomous systems hallucinate.</p>
-          </div>
+        </div>
+
+        <div class="horror-closer">
+          <p class="brutal-text horror-closer-text">
+            THE MATH ISN'T MATHING.<br>
+            <span class="highlight">AGENTS GENERATE CODE FASTER THAN HUMANS CAN REVIEW IT.</span><br>
+            YOU'RE NOT DOING CODE REVIEW. YOU'RE RUBBER-STAMPING MACHINE OUTPUT.
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- CLI Showcase -->
-    <section id="cli" class="section">
+    <!-- ===== SECTION 2: THE BOUNCER (Magic / Mechanism) ===== -->
+    <section id="the-bouncer" class="section section--bouncer">
       <div class="section-container">
-        <div class="cli-brutal-layout">
-          <div class="cli-data-panel">
-            <h2 class="section-title brutal-text">SYS.CLI</h2>
-            <div class="cli-info-block">
-              <div class="info-row">
-                <span class="info-key">INTERFACE:</span>
-                <span class="info-val highlight">UNIFIED TERMINAL</span>
-              </div>
-              <div class="info-row">
-                <span class="info-key">DEPENDENCIES:</span>
-                <span class="info-val">PYTHON 3.10+</span>
-              </div>
-              <div class="info-row">
-                <span class="info-key">STATUS:</span>
-                <span class="info-val">ONLINE</span>
-              </div>
+        <h2 class="section-title brutal-text">
+          <span class="section-label">02</span>
+          MEET THE BOUNCER AT THE DOOR OF YOUR CODEBASE
+        </h2>
+
+        <p class="section-subtitle">
+          Every time an AI agent tries to save a file, WatchLLM intercepts the write <em>before it touches disk</em>. It parses the code into an AST. It runs a deterministic ruleset. It decides: <span class="highlight">ALLOW</span> or <span class="highlight-strike">BLOCK</span>. In under 10 milliseconds. No network. No ML. No vibes. Just cold, hard, auditable logic.
+        </p>
+
+        <!-- THE FLOW -->
+        <div class="flow-visual">
+          <div class="flow-node">
+            <div class="flow-node-icon">🤖</div>
+            <div class="flow-node-label">AGENT WRITES CODE</div>
+            <div class="flow-node-sub">Cursor / Copilot / Aider / Claude Code</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="flow-node-icon">⌨</div>
+            <div class="flow-node-label">SAVE EVENT</div>
+            <div class="flow-node-sub">VS Code onWillSaveTextDocument</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node flow-node--watchllm">
+            <div class="flow-node-glow"></div>
+            <div class="flow-node-icon">🛡</div>
+            <div class="flow-node-label">WATCHLLM</div>
+            <div class="flow-node-sub">AST Parse → Rule Engine → Decision</div>
+          </div>
+          <div class="flow-arrow flow-arrow--split">→</div>
+          <div class="flow-split">
+            <div class="flow-node flow-node--allow">
+              <div class="flow-node-icon">✓</div>
+              <div class="flow-node-label">ALLOW</div>
+              <div class="flow-node-sub">Code is clean. Save proceeds.</div>
             </div>
-            <div class="cli-commands">
-              <div class="cmd-item">
-                <span class="cmd-trigger">&gt; watchllm init</span>
-                <span class="cmd-desc">Scaffold enforcement rules.</span>
-              </div>
-              <div class="cmd-item">
-                <span class="cmd-trigger">&gt; watchllm evaluate</span>
-                <span class="cmd-desc">Execute kernel analysis.</span>
-              </div>
+            <div class="flow-node flow-node--block">
+              <div class="flow-node-icon">✕</div>
+              <div class="flow-node-label">BLOCK</div>
+              <div class="flow-node-sub">Violation detected. Save denied. Agent humbled.</div>
             </div>
           </div>
-          
-          <div class="cli-window-brutal">
-            <div class="cli-window-header">
-              <span>watchllm-status.exe</span>
-              <span class="window-controls">[X]</span>
+        </div>
+
+        <!-- The 4 Rules -->
+        <div class="rules-grid">
+          <div class="rule-card">
+            <div class="rule-card-num">RULE 01</div>
+            <h3 class="rule-card-title">SECRET LITERAL DETECTION</h3>
+            <p class="rule-card-body">Not regex. AST-level analysis. Distinguishes <code>const key = "sk-live-xxx"</code> (BLOCK) from <code>const key = process.env.STRIPE_KEY</code> (ALLOW). Knows the difference between a leak and a legitimate retrieval.</p>
+            <div class="rule-card-example">
+              <span class="rule-card-example-label">BLOCKS:</span>
+              <code>const OPENAI_KEY = "sk-proj-..."</code><br>
+              <code>const DB_URL = "postgres://admin:pw@prod"</code>
             </div>
-            <div class="cli-window-body">
-<pre>
-<span class="accent-color">PS D:\project></span> watchllm status
-               <span class="highlight bold">WatchLLM Installation Status</span>               
-┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Subsystem       ┃ Status  ┃ Details                    ┃
-┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ watchllm-kernel │   OK    │                            │
-│ kl (klyd)       │   OK    │                            │
-│ replay          │  SKIP   │ No health-check defined    │
-└─────────────────┴─────────┴────────────────────────────┘
-<span class="bold">All subsystems OK.</span>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-card-num">RULE 02</div>
+            <h3 class="rule-card-title">FORBIDDEN IMPORT GATE</h3>
+            <p class="rule-card-body">Blocks imports of <code>child_process</code>, <code>vm</code>, <code>eval</code>, and any module you declare off-limits. AST-aware — it knows a comment mentioning <code>child_process</code> isn't the same as actually importing it.</p>
+            <div class="rule-card-example">
+              <span class="rule-card-example-label">BLOCKS:</span>
+              <code>import { exec } from 'child_process'</code><br>
+              <code>const { fork } = require('child_process')</code>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-card-num">RULE 03</div>
+            <h3 class="rule-card-title">MODULE BOUNDARY ENFORCEMENT</h3>
+            <p class="rule-card-body">Declare what each module can import. <code>auth/</code> can talk to <code>db/public/</code>. <code>auth/</code> cannot touch <code>db/internal/</code>. Your agents don't know your architecture. WatchLLM does.</p>
+            <div class="rule-card-example">
+              <span class="rule-card-example-label">BLOCKS:</span>
+              <code>// in src/auth/login.ts:</code><br>
+              <code>import { rawQuery } from '../../db/internal'</code>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-card-num">RULE 04</div>
+            <h3 class="rule-card-title">AUTH FLOW GATE</h3>
+            <p class="rule-card-body">Requires explicit auth guards before any protected database mutation. No auth check? No save. Your agent can't accidentally wire a public endpoint directly to a <code>DELETE FROM users</code> query.</p>
+            <div class="rule-card-example">
+              <span class="rule-card-example-label">BLOCKS:</span>
+              <code>app.post('/delete-account', handler)</code><br>
+              <span class="rule-card-example-ok">(no auth middleware detected)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shadow Mode -->
+        <div class="shadow-callout">
+          <div class="shadow-callout-badge">CHICKEN?</div>
+          <p class="shadow-callout-text">
+            <strong>Shadow mode.</strong> Too scared to block outright? Run WatchLLM in observation mode. It logs every violation to <code>.watchllm/logs/violations.jsonl</code> without blocking a single save. See what your agents are <em>really</em> doing. We guarantee you'll switch to enforce mode within 48 hours.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3: RECEIPTS (Proof / Architecture) ===== -->
+    <section id="receipts" class="section section--receipts">
+      <div class="section-container">
+        <h2 class="section-title brutal-text">
+          <span class="section-label">03</span>
+          THIS ISN'T VIBES. THIS IS ENGINEERING.
+        </h2>
+
+        <!-- Tech Stack -->
+        <div class="stack-grid">
+          <div class="stack-item">
+            <div class="stack-icon">🦀</div>
+            <div class="stack-name">RUST KERNEL</div>
+            <div class="stack-desc">Native performance. Zero-GC pauses. Compiles to WASM for in-browser and in-editor execution without spawning a Python process.</div>
+          </div>
+          <div class="stack-item">
+            <div class="stack-icon">🌳</div>
+            <div class="stack-name">TREE-SITTER AST</div>
+            <div class="stack-desc">Not regex. Not grep. Actual syntax trees. Distinguishes code from comments, strings from variables, intent from accident.</div>
+          </div>
+          <div class="stack-item">
+            <div class="stack-icon">🧠</div>
+            <div class="stack-name">ARCHITECTURAL MEMORY (KLYD)</div>
+            <div class="stack-desc">Extracts design decisions from your git history. Injects constraints into agent context windows. Your agents finally understand your architecture because we make them.</div>
+          </div>
+          <div class="stack-item">
+            <div class="stack-icon">⏪</div>
+            <div class="stack-name">EXECUTION REPLAY</div>
+            <div class="stack-desc">Full DAG replay engine. Trace every single tool call your agent made. Find the exact moment it hallucinated. Show it to your manager. Show it to your therapist.</div>
+          </div>
+          <div class="stack-item">
+            <div class="stack-icon">🔬</div>
+            <div class="stack-name">ADVERSARIAL TESTING</div>
+            <div class="stack-desc">We stress-test agents with prompt injection, tool abuse, and hallucination scenarios. 42 tests passing. Your agent has a reliability score. It's probably lower than you think.</div>
+          </div>
+          <div class="stack-item">
+            <div class="stack-icon">🔌</div>
+            <div class="stack-name">ZERO DEPENDENCY ENFORCEMENT</div>
+            <div class="stack-desc">No API keys required. No cloud. No telemetry. Works offline. Deterministic: same input = same output. Always. The way infrastructure should be.</div>
+          </div>
+        </div>
+
+        <!-- Config snippet -->
+        <div class="config-showcase">
+          <div class="config-header">
+            <span>.watchllm.yaml</span>
+            <span>— 15 lines to full protection</span>
+          </div>
+<pre class="config-code">
+<span class="config-comment"># Drop this in your repo root. Done.</span>
+<span class="config-key">rules</span>:
+  <span class="config-key">- secret_literal</span>:
+      <span class="config-key">mode</span>: <span class="config-val">enforce</span>       <span class="config-comment"># block secrets. always.</span>
+  <span class="config-key">- forbidden_import</span>:
+      <span class="config-key">mode</span>: <span class="config-val">enforce</span>
+      <span class="config-key">imports</span>:
+        <span class="config-key">- child_process</span>
+        <span class="config-key">- vm</span>
+        <span class="config-key">- repl</span>
+  <span class="config-key">- boundaries</span>:
+      <span class="config-key">mode</span>: <span class="config-val">shadow</span>       <span class="config-comment"># log first, block later</span>
+  <span class="config-key">- auth_flow</span>:
+      <span class="config-key">mode</span>: <span class="config-val">enforce</span>
 </pre>
+        </div>
+
+        <!-- CLI Terminal -->
+        <div class="cli-window-brutal">
+          <div class="cli-window-header">
+            <span>watchllm evaluate --strict</span>
+            <span class="window-controls">[−][□][×]</span>
+          </div>
+          <div class="cli-window-body">
+<pre>
+<span class="accent-color">$</span> watchllm evaluate src/auth/login.ts --strict
+
+  <span class="highlight bold">WatchLLM Kernel Evaluation</span>
+┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Rule              ┃ Result ┃ Detail                                     ┃
+┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ secret_literal    │ <span class="pass-text">PASS</span>   │ No hardcoded credentials detected         │
+│ forbidden_import  │ <span class="pass-text">PASS</span>   │ All imports within allowlist              │
+│ boundaries        │ <span class="fail-text">BLOCK</span>  │ auth/login.ts → ../../db/internal/query.ts │
+│ auth_flow         │ <span class="pass-text">PASS</span>   │ Auth middleware confirmed                  │
+└───────────────────┴────────┴───────────────────────────────────────────┘
+
+<span class="fail-text bold">BLOCKED:</span> 1 violation. Save denied.
+<span class="fg-dim">Evaluated in 3.2ms. Snapshot saved to .watchllm/snapshots/</span>
+</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 4: OBJECTION DESTROYERS ===== -->
+    <section id="objections" class="section section--objections">
+      <div class="section-container">
+        <h2 class="section-title brutal-text">
+          <span class="section-label">04</span>
+          WE KNOW WHAT YOU'RE THINKING.<br>
+          <span class="highlight">YOU'RE WRONG.</span>
+        </h2>
+
+        <div class="objection-grid">
+          <div class="objection-card">
+            <div class="objection-header">
+              <span class="objection-speaker">YOU:</span>
+              <span class="objection-quote">"My agent doesn't make those mistakes. I use a good model."</span>
+            </div>
+            <div class="objection-ruling">
+              <span class="objection-speaker objection-speaker--us">US:</span>
+              <span class="objection-verdict">OVERRULED.</span>
+              <p>GPT-4, Claude Opus, Gemini Ultra — doesn't matter. They all hallucinate. They're next-token predictors, not engineers. They don't <em>know</em> your codebase. They're improvising jazz on your production database. The best models just improvise more <em>convincingly</em> — which makes them <strong>more dangerous</strong>, not less.</p>
+            </div>
+          </div>
+
+          <div class="objection-card">
+            <div class="objection-header">
+              <span class="objection-speaker">YOU:</span>
+              <span class="objection-quote">"I review every line my agent writes."</span>
+            </div>
+            <div class="objection-ruling">
+              <span class="objection-speaker objection-speaker--us">US:</span>
+              <span class="objection-verdict">NO YOU DON'T.</span>
+              <p>You reviewed the first 40 lines. Then you got tired. Then the diffs got bigger. Then you started trust-merging. We've all been there. Agents write hundreds of lines in seconds. Humans review at maybe 200 lines per hour with full attention. <strong>The math doesn't work.</strong> You are a rubber stamp with imposter syndrome.</p>
+            </div>
+          </div>
+
+          <div class="objection-card">
+            <div class="objection-header">
+              <span class="objection-speaker">YOU:</span>
+              <span class="objection-quote">"We have CI/CD. Secrets get caught in the pipeline."</span>
+            </div>
+            <div class="objection-ruling">
+              <span class="objection-speaker objection-speaker--us">US:</span>
+              <span class="objection-verdict">LOL. LMAO, EVEN.</span>
+              <p>CI/CD catches things <em>after</em> they're committed. After they're pushed. After they're in your git history. Forever. You can rotate the key — congrats. The 14 people who cloned your repo in the 3 hours between push and detection? They all have your keys now. <strong>Pre-commit is the only enforcement that matters.</strong></p>
+            </div>
+          </div>
+
+          <div class="objection-card">
+            <div class="objection-header">
+              <span class="objection-speaker">YOU:</span>
+              <span class="objection-quote">"This will slow down my flow. 10ms per save adds up."</span>
+            </div>
+            <div class="objection-ruling">
+              <span class="objection-speaker objection-speaker--us">US:</span>
+              <span class="objection-verdict">BE SERIOUS.</span>
+              <p>10 milliseconds. That's 1/100th of a second. Your agent spent 4.7 seconds generating that code. Your TypeScript LSP took 200ms to type-check it. You just waited 11 seconds for a test suite to run. And you're worried about <strong>10ms</strong>? That's the time it takes light to travel 3,000 kilometers. Get a grip.</p>
+            </div>
+          </div>
+
+          <div class="objection-card">
+            <div class="objection-header">
+              <span class="objection-speaker">YOU:</span>
+              <span class="objection-quote">"I'll add this later. We're moving fast right now."</span>
+            </div>
+            <div class="objection-ruling">
+              <span class="objection-speaker objection-speaker--us">US:</span>
+              <span class="objection-verdict">FAMOUS LAST WORDS.</span>
+              <p>"We'll add auth later." "We'll add tests later." "We'll add monitoring later." Every post-mortem ever written contains one of these sentences. The best time to add a guardrail is before you need it. The second best time is <strong>right now</strong>, 15 lines of YAML and one pip install away.</p>
+            </div>
+          </div>
+
+          <div class="objection-card">
+            <div class="objection-header">
+              <span class="objection-speaker">YOU:</span>
+              <span class="objection-quote">"What about false positives? I don't want my saves blocked for no reason."</span>
+            </div>
+            <div class="objection-ruling">
+              <span class="objection-speaker objection-speaker--us">US:</span>
+              <span class="objection-verdict">FAIL-OPEN. SHADOW MODE. WE THOUGHT OF THIS.</span>
+              <p>If the kernel crashes, times out, or can't parse — the save proceeds. Availability over enforcement. Start in shadow mode (log-only, zero blocking) for a week. Review the logs. Tune the rules. Then flip to enforce. You're not jumping into the deep end. You're dipping a toe in. The water's fine. <strong>And it's full of all the shit your agent tried to save.</strong></p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Footer -->
+    <!-- ===== SECTION 5: THE GAUNTLET (Final Conversion) ===== -->
+    <section id="do-it" class="section section--cta">
+      <div class="section-container">
+        <h2 class="section-title brutal-text cta-title">
+          <span class="section-label">05</span>
+          YOU HAVE TWO OPTIONS.
+        </h2>
+
+        <div class="cta-options">
+          <div class="cta-option cta-option--bad">
+            <div class="cta-option-label">OPTION A</div>
+            <h3 class="cta-option-title">KEEP TRUSTING THE BLACK BOX</h3>
+            <ul class="cta-option-list">
+              <li>Keep rubber-stamping AI-generated code you didn't read</li>
+              <li>Hope your agent doesn't hallucinate secrets into a public repo</li>
+              <li>Wait for the PagerDuty alert that makes your stomach drop</li>
+              <li>Write the post-mortem. Explain to customers. Rotate every key.</li>
+              <li>Wonder, forever, if you could have prevented it</li>
+            </ul>
+            <div class="cta-option-footer">EXPECTED COST: YOUR JOB, MAYBE YOUR COMPANY</div>
+          </div>
+
+          <div class="cta-option cta-option--good">
+            <div class="cta-option-glow"></div>
+            <div class="cta-option-label">OPTION B (CORRECT)</div>
+            <h3 class="cta-option-title">INSTALL WATCHLLM IN 30 SECONDS</h3>
+            <ul class="cta-option-list">
+              <li>One pip install. One YAML file. Done.</li>
+              <li>Every save intercepted. Every violation caught.</li>
+              <li>Deterministic. Auditable. No API keys. No cloud. No bullshit.</li>
+              <li>Sleep through the night. Let your agent hallucinate in a sandbox.</li>
+              <li>Be the developer who had guardrails <em>before</em> the incident.</li>
+            </ul>
+            <div class="cta-option-footer cta-option-footer--good">EXPECTED COST: $0. ZERO REGRETS.</div>
+          </div>
+        </div>
+
+        <div class="cta-terminal">
+          <div class="terminal-install-brutal terminal-install-brutal--big" id="install-box-2">
+            <span class="cmd-line"><span class="accent-color">$</span> pip install watchllm-cli</span>
+            <span class="cmd-sub">then: <span class="highlight">watchllm init</span> in any repo. 30 seconds. That's it.</span>
+            <div class="copy-feedback">GOOD. NOW PASTE IT IN YOUR TERMINAL.</div>
+          </div>
+        </div>
+
+        <p class="cta-bottom-text">
+          <a href="https://github.com/kaadipranav/WatchLLM" target="_blank" class="highlight">STAR ON GITHUB</a> &nbsp;·&nbsp;
+          <a href="#" class="fg-dim">READ THE DOCS</a> &nbsp;·&nbsp;
+          <span class="fg-dim">v0.1.0 — EARLY, AGGRESSIVE, HUNGRY</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
     <footer class="footer-brutal">
       <div class="footer-grid">
         <div class="footer-brand">
@@ -171,14 +523,16 @@
           <span class="brand-version">v0.1.0</span>
         </div>
         <div class="footer-links">
-          <a href="https://github.com/kaadipranav/WatchLLM">GITHUB</a>
+          <a href="https://github.com/kaadipranav/WatchLLM" target="_blank">GITHUB</a>
           <a href="#">DOCS</a>
           <a href="#">NPM</a>
+        </div>
+        <div class="footer-tagline">
+          AGENTS ARE PROBABILISTIC. INFRASTRUCTURE CANNOT BE.
         </div>
       </div>
     </footer>
 
-    <!-- App Logic -->
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
