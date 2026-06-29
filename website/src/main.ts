@@ -187,15 +187,28 @@ window.addEventListener('scroll', () => {
 })
 
 // ─── RANDOM GLITCH ON HERO TITLE ──────────────────────────
-const heroTitle = document.querySelector('.hero-title') as HTMLElement | null
-if (heroTitle) {
-  setInterval(() => {
-    if (Math.random() > 0.15) return
-    heroTitle.style.transform = `skewX(${(Math.random() - 0.5) * 2}deg) translateX(${(Math.random() - 0.5) * 4}px)`
-    setTimeout(() => {
-      heroTitle.style.transform = ''
-    }, 60 + Math.random() * 100)
-  }, 4000 + Math.random() * 3000)
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import GlitchText from './GlitchText'
+
+const reactHeroRoot = document.getElementById('react-hero-root')
+if (reactHeroRoot) {
+  const root = createRoot(reactHeroRoot)
+  root.render(
+    React.createElement(
+      'h1', 
+      { className: 'hero-title brutal-text', style: { display: 'flex', flexDirection: 'column', alignItems: 'center'} },
+      React.createElement('span', null, 'YOUR AI AGENT'),
+      React.createElement('span', { className: 'hero-title-strike' }, 'IS YOUR CO-PILOT'),
+      React.createElement(GlitchText, { 
+        text: 'IS A FUCKING LIAR.',
+        speed: 0.5,
+        enableShadows: true,
+        enableOnHover: false,
+        className: 'hero-title-real glitch-text'
+      })
+    )
+  )
 }
 
 // ─── CONSOLE EASTER EGG ───────────────────────────────────
