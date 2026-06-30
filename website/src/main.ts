@@ -196,16 +196,19 @@ if (reactHeroRoot) {
   const root = createRoot(reactHeroRoot)
   root.render(
     React.createElement(
-      'h1', 
-      { className: 'hero-title brutal-text', style: { display: 'flex', flexDirection: 'column', alignItems: 'center'} },
-      React.createElement('span', null, 'YOUR AI AGENT'),
-      React.createElement('span', { className: 'hero-title-strike' }, 'IS YOUR CO-PILOT'),
-      React.createElement(GlitchText, { 
+      'h1',
+      {
+        className: 'hero-title brutal-text',
+        style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
+      },
+      React.createElement('span', { className: 'hero-line hero-line--top' }, 'YOUR AI AGENT'),
+      React.createElement('span', { className: 'hero-title-strike hero-line hero-line--strike' }, 'IS YOUR CO-PILOT'),
+      React.createElement(GlitchText, {
         text: 'IS A FUCKING LIAR.',
         speed: 0.5,
         enableShadows: true,
         enableOnHover: false,
-        className: 'hero-title-real glitch-text'
+        className: 'hero-title-real hero-line hero-line--real'
       })
     )
   )
