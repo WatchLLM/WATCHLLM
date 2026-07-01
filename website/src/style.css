@@ -296,8 +296,7 @@ a:hover { color: var(--accent); }
   padding: 0.1em 0.15em;
   margin-bottom: 1.5rem;
   letter-spacing: -0.05em;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
+  width: 100%;
   text-align: center;
   z-index: 0;
 }
