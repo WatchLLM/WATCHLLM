@@ -290,66 +290,18 @@ a:hover { color: var(--accent); }
   font-family: var(--font-heading);
   font-size: clamp(4rem, 18vw, 18rem);
   font-weight: 900;
-  line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 2px var(--accent);
-  margin-bottom: -1.5rem;
-  position: relative;
-  z-index: 0;
+  line-height: 0.85;
+  color: #000;
+  background: #e8e8e8;
+  padding: 0.1em 0.15em;
+  margin-bottom: 1.5rem;
   letter-spacing: -0.05em;
-  text-shadow: 0 0 20px rgba(204, 255, 0, 0.2);
-  animation: mega-glitch 5s infinite;
-  width: 100%;
-}
-
-.hero-mega-text::before,
-.hero-mega-text::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  color: var(--bg);
-  -webkit-text-stroke: 2px transparent;
-}
-
-.hero-mega-text::before {
-  left: 3px;
-  text-shadow: -2px 0 var(--red);
-  clip-path: polygon(0 20%, 100% 20%, 100% 30%, 0 30%);
-  animation: mega-glitch-anim-1 3s infinite linear alternate-reverse;
-}
-
-.hero-mega-text::after {
-  left: -3px;
-  text-shadow: -2px 0 var(--accent);
-  clip-path: polygon(0 60%, 100% 60%, 100% 70%, 0 70%);
-  animation: mega-glitch-anim-2 2s infinite linear alternate-reverse;
-}
-
-@keyframes mega-glitch {
-  0%, 100% { transform: skewX(0deg); }
-  98% { transform: skewX(0deg); }
-  99% { transform: skewX(10deg); }
-}
-
-@keyframes mega-glitch-anim-1 {
-  0% { clip-path: polygon(0 20%, 100% 20%, 100% 30%, 0 30%); }
-  20% { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); }
-  40% { clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%); }
-  60% { clip-path: polygon(0 40%, 100% 40%, 100% 50%, 0 50%); }
-  80% { clip-path: polygon(0 80%, 100% 80%, 100% 90%, 0 90%); }
-  100% { clip-path: polygon(0 30%, 100% 30%, 100% 40%, 0 40%); }
-}
-
-@keyframes mega-glitch-anim-2 {
-  0% { clip-path: polygon(0 10%, 100% 10%, 100% 30%, 0 30%); }
-  20% { clip-path: polygon(0 80%, 100% 80%, 100% 100%, 0 100%); }
-  40% { clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%); }
-  60% { clip-path: polygon(0 60%, 100% 60%, 100% 70%, 0 70%); }
-  80% { clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); }
-  100% { clip-path: polygon(0 70%, 100% 70%, 100% 90%, 0 90%); }
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 0;
 }
 
 .hero-title {
