@@ -988,49 +988,46 @@ a:hover { color: var(--accent); }
   background: radial-gradient(ellipse at 50% 50%, rgba(204,255,0,0.03) 0%, transparent 70%);
 }
 
+.sticky-layout {
+  display: flex;
+  gap: 6rem;
+  align-items: flex-start;
+  margin-bottom: 8rem;
+}
+
+.sticky-left {
+  flex: 0 0 45%;
+  position: sticky;
+  top: 30vh;
+}
+
+.sticky-right {
+  flex: 1;
+}
+
 .stack-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 4rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .stack-item {
-  grid-column: span 4;
   border: 1px solid rgba(255,255,255,0.08);
-  padding: 1.45rem;
+  padding: 3rem 2rem;
   background: rgba(8,8,8,0.82);
   transition: border-color 0.15s, transform 0.15s;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.stack-item:nth-child(1) {
-  grid-column: span 5;
-  min-height: 260px;
-}
-
-.stack-item:nth-child(2) {
-  grid-column: span 3;
-  transform: translateY(28px);
-}
-
-.stack-item:nth-child(3) {
-  grid-column: span 4;
-  transform: translateY(-12px);
-}
-
-.stack-item:nth-child(4) {
-  grid-column: 2 / span 4;
-}
-
-.stack-item:nth-child(5) {
-  grid-column: span 5;
-  transform: translateY(22px);
-}
-
+.stack-item:nth-child(1),
+.stack-item:nth-child(2),
+.stack-item:nth-child(3),
+.stack-item:nth-child(4),
+.stack-item:nth-child(5),
 .stack-item:nth-child(6) {
-  grid-column: span 3;
-  transform: translateY(-8px);
+  grid-column: auto;
+  transform: none;
+  min-height: auto;
 }
 
 .stack-item:hover {
@@ -1528,12 +1525,6 @@ a:hover { color: var(--accent); }
   .rule-card:nth-child(3),
   .rule-card:nth-child(4),
   .stack-item,
-  .stack-item:nth-child(1),
-  .stack-item:nth-child(2),
-  .stack-item:nth-child(3),
-  .stack-item:nth-child(4),
-  .stack-item:nth-child(5),
-  .stack-item:nth-child(6),
   .objection-card,
   .objection-card:nth-child(1),
   .objection-card:nth-child(2),
@@ -1544,6 +1535,14 @@ a:hover { color: var(--accent); }
     grid-column: auto;
     transform: none;
     min-height: auto;
+  }
+
+  .sticky-layout {
+    flex-direction: column;
+    gap: 3rem;
+  }
+  .sticky-left {
+    position: static;
   }
 
   .horror-closer,
