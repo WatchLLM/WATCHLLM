@@ -300,7 +300,7 @@ a:hover { color: var(--accent); }
 
 .ascii-art {
   font-family: Consolas, "Courier New", ui-monospace, monospace;
-  font-size: clamp(10px, 3.5vw, 32px);
+  font-size: clamp(8px, 2.75vw, 24px);
   line-height: 1 !important;
   letter-spacing: 0 !important;
   color: var(--accent);
