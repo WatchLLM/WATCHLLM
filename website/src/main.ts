@@ -205,7 +205,7 @@ if (reactHeroRoot) {
       'h1',
       {
         className: 'hero-title brutal-text',
-        style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
+        style: { display: 'flex', flexDirection: 'column', alignItems: 'center' }
       },
       React.createElement('span', { className: 'hero-line hero-line--top' }, 'YOUR AI AGENT'),
       React.createElement('span', { className: 'hero-title-strike hero-line hero-line--strike' }, 'IS YOUR CO-PILOT'),
