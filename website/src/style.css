@@ -297,9 +297,7 @@ a:hover { color: var(--accent); }
   margin-bottom: 1.5rem;
   letter-spacing: -0.05em;
   width: 100vw;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-left: calc(-50vw + 50%);
   text-align: center;
   z-index: 0;
 }
