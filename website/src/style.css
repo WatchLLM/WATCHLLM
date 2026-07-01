@@ -291,14 +291,16 @@ a:hover { color: var(--accent); }
   overflow: visible;
   position: relative;
   opacity: 0.48;
-  width: 150vw;
+  width: 100vw;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
 }
 
 .ascii-art {
   font-family: Consolas, "Courier New", ui-monospace, monospace;
-  font-size: clamp(10px, 2.5vw, 24px);
+  font-size: clamp(10px, 3.5vw, 32px);
   line-height: 1 !important;
   letter-spacing: 0 !important;
   color: var(--accent);
