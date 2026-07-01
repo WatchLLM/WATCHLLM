@@ -40,8 +40,11 @@ body {
   display: block;
   position: fixed;
   top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
-  background-size: 100% 4px;
+  background:
+    linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%),
+    linear-gradient(to right, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+  background-size: 100% 4px, 4px 100%;
+  opacity: 0.15;
   z-index: 9999;
   pointer-events: none;
 }
@@ -76,9 +79,9 @@ a:hover { color: var(--accent); }
 .marquee-container {
   width: 100%;
   overflow: hidden;
-  background: var(--card-bg);
+  background: #000;
   color: var(--accent);
-  padding: 0.4rem 0;
+  padding: 0.6rem 0;
   border-bottom: 1px solid var(--border);
   position: relative;
   z-index: 100;
@@ -87,10 +90,10 @@ a:hover { color: var(--accent); }
 .marquee--top {
   display: flex;
   white-space: nowrap;
-  animation: marquee-scroll 30s linear infinite;
-  font-size: 0.75rem;
-  font-weight: bold;
-  letter-spacing: 0.05em;
+  animation: marquee-scroll 20s linear infinite;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 4px;
 }
 
 .marquee--top span {
@@ -294,13 +297,14 @@ a:hover { color: var(--accent); }
   overflow: visible;
   position: relative;
   opacity: 0.48;
-  max-width: 88vw;
-  transform: translateX(-0.65rem);
+  max-width: none;
+  width: 150vw;
+  transform: translateX(-15vw);
 }
 
 .ascii-art {
   font-family: Consolas, "Courier New", ui-monospace, monospace;
-  font-size: clamp(5px, 1.1vw, 13px);
+  font-size: clamp(10px, 2.5vw, 24px);
   line-height: 1 !important;
   letter-spacing: 0 !important;
   color: var(--accent);
@@ -378,28 +382,38 @@ a:hover { color: var(--accent); }
 .hero-actions {
   display: flex;
   gap: 0.75rem;
-  flex-wrap: wrap;
-  align-items: stretch;
-  margin-top: 0.2rem;
-  transform: translateX(clamp(0rem, 1.6vw, 1.4rem));
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+  width: 100%;
 }
 
 .terminal-install-brutal {
   display: inline-flex;
   flex-direction: column;
   gap: 0.35rem;
-  border: 2px solid var(--accent);
-  padding: 0.85rem 1.25rem;
+  border: 1px solid var(--red);
+  padding: 1.25rem 2rem;
   position: relative;
   cursor: pointer;
-  background: rgba(204, 255, 0, 0.045);
+  background: rgba(255, 34, 34, 0.045);
   transition: all 0.1s;
-  min-width: 300px;
+  min-width: 450px;
+  animation: pulse-border 2s infinite;
+  align-items: center;
+  text-align: center;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(255, 34, 34, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 34, 34, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 34, 34, 0); }
 }
 
 .terminal-install-brutal:hover {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--red);
+  border-color: var(--red);
   color: var(--bg);
   transform: translate(-2px, -2px);
   box-shadow: 4px 4px 0 var(--fg-dim);
@@ -509,7 +523,7 @@ a:hover { color: var(--accent); }
    SECTIONS — SHARED
    ============================== */
 .section {
-  padding: 8rem 2rem;
+  padding: 10rem 2rem;
   border-top: 1px solid rgba(255,255,255,0.06);
   position: relative;
 }
@@ -564,35 +578,51 @@ a:hover { color: var(--accent); }
 }
 
 .horror-grid {
-  display: grid;
-  grid-template-columns: 1.28fr 0.92fr 0.86fr;
-  gap: clamp(1rem, 2vw, 1.75rem);
-  margin-bottom: 4.5rem;
-  align-items: start;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 6rem;
+  min-height: 600px;
+  width: 100%;
 }
 
 .horror-card {
   border: 1px solid rgba(255,255,255,0.08);
   padding: 1.6rem;
   background: rgba(8,8,8,0.88);
-  position: relative;
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  position: absolute;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .horror-card:nth-child(1) {
+  z-index: 10;
+  width: 55%;
+  max-width: 700px;
   min-height: 560px;
   border-color: rgba(255,34,34,0.62);
   background:
     linear-gradient(135deg, rgba(255,34,34,0.10), rgba(8,8,8,0.92) 42%),
     var(--card-bg);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
 }
 
 .horror-card:nth-child(2) {
-  transform: translateY(34px);
+  z-index: 5;
+  width: 35%;
+  left: 0;
+  opacity: 0.4;
+  transform: scale(0.85) translateY(40px) translateX(-20px);
+  filter: blur(1px);
 }
 
 .horror-card:nth-child(3) {
-  transform: translateY(-14px);
+  z-index: 5;
+  width: 35%;
+  right: 0;
+  opacity: 0.4;
+  transform: scale(0.85) translateY(-20px) translateX(20px);
+  filter: blur(1px);
 }
 
 .horror-card:nth-child(1) .horror-card-title {
@@ -609,15 +639,14 @@ a:hover { color: var(--accent); }
 }
 
 .horror-card:nth-child(1):hover {
-  transform: translateY(-6px);
+  transform: scale(1.02);
 }
 
-.horror-card:nth-child(2):hover {
-  transform: translateY(26px);
-}
-
-.horror-card:nth-child(3):hover {
-  transform: translateY(-22px);
+.horror-card:nth-child(2):hover, .horror-card:nth-child(3):hover {
+  opacity: 1;
+  z-index: 20;
+  filter: blur(0);
+  transform: scale(1.05);
 }
 
 .horror-card-icon {
@@ -688,21 +717,20 @@ a:hover { color: var(--accent); }
 .horror-closer {
   width: 100vw;
   margin-left: calc(-1 * var(--spine));
-  padding: clamp(4rem, 8vw, 7rem) var(--spine);
+  padding: clamp(6rem, 12vw, 10rem) var(--spine);
   border: none;
-  border-top: 1px solid rgba(255,34,34,0.25);
-  border-bottom: 1px solid rgba(255,34,34,0.25);
-  background:
-    linear-gradient(90deg, rgba(255,34,34,0.20), transparent 62%),
-    #020202;
+  background: #111111;
   text-align: left;
+  position: relative;
+  z-index: 20;
 }
 
 .horror-closer-text {
-  font-size: clamp(1.75rem, 4.8vw, 5.4rem);
-  line-height: 0.92;
+  font-size: clamp(3rem, 7vw, 96px);
+  line-height: 0.85;
   color: var(--fg);
-  max-width: 1120px;
+  max-width: 1300px;
+  letter-spacing: -0.05em;
 }
 
 /* ==============================
@@ -801,8 +829,9 @@ a:hover { color: var(--accent); }
 }
 
 .flow-arrow {
-  font-size: 1.5rem;
-  color: var(--fg-dimmer);
+  font-size: 2.5rem;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent-dim);
   font-weight: bold;
 }
 
@@ -840,92 +869,76 @@ a:hover { color: var(--accent); }
 .flow-node--block {
   border-color: rgba(255,34,34,0.55);
   transform: translateY(12px);
+  box-shadow: 0 0 30px rgba(255, 34, 34, 0.4), inset 0 0 15px rgba(255, 34, 34, 0.2);
 }
 
 .flow-node--block .flow-node-label {
   color: var(--red);
+  text-shadow: 0 0 8px rgba(255, 34, 34, 0.5);
 }
 
 /* Rules Grid */
 .rules-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 1.25rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 6rem;
   margin-bottom: 3rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .rule-card {
-  grid-column: span 3;
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 1.35rem;
+  border: 2px solid rgba(255,255,255,0.08);
+  padding: 2.5rem;
   background: rgba(8,8,8,0.82);
   position: relative;
-  transition: border-color 0.15s, transform 0.15s, background 0.15s;
-}
-
-.rule-card:nth-child(1) {
-  grid-column: span 5;
-  min-height: 380px;
-  background:
-    linear-gradient(135deg, rgba(204,255,0,0.08), rgba(8,8,8,0.9) 46%),
-    var(--card-bg);
-}
-
-.rule-card:nth-child(2) {
-  grid-column: span 4;
-  transform: translateY(24px);
-}
-
-.rule-card:nth-child(3) {
-  grid-column: span 3;
-  transform: translateY(-10px);
-}
-
-.rule-card:nth-child(4) {
-  grid-column: 6 / span 5;
-  transform: translateY(-18px);
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1;
 }
 
 .rule-card:hover {
-  border-color: rgba(204,255,0,0.45);
+  border-color: rgba(204,255,0,0.6);
   background: rgba(12,12,12,0.96);
+  box-shadow: 0 10px 30px rgba(204,255,0,0.05);
 }
 
 .rule-card-num {
-  font-size: 0.6rem;
+  font-size: 1rem;
   color: var(--accent);
-  letter-spacing: 0.2em;
-  margin-bottom: 0.5rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
   font-weight: bold;
 }
 
 .rule-card-title {
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  margin-bottom: 1.5rem;
   text-transform: uppercase;
   letter-spacing: -0.02em;
 }
 
 .rule-card-body {
-  font-size: 0.8rem;
+  font-size: 14px;
   color: var(--fg-dim);
-  line-height: 1.6;
-  margin-bottom: 1rem;
+  line-height: 1.4;
+  margin-bottom: 2rem;
 }
 
 .rule-card-body code {
   background: rgba(255,255,255,0.05);
-  padding: 0.1rem 0.25rem;
-  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 12px;
   color: var(--fg);
 }
 
 .rule-card-example {
   border-top: 1px dashed var(--border);
-  padding-top: 0.75rem;
-  font-size: 0.7rem;
+  padding-top: 1.5rem;
+  font-size: 12px;
   color: var(--fg-dimmer);
   line-height: 1.6;
 }
@@ -1139,34 +1152,18 @@ a:hover { color: var(--accent); }
 }
 
 .objection-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 1.25rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: stretch;
 }
 
 .objection-card {
-  grid-column: span 6;
   border: 1px solid rgba(255,255,255,0.08);
-  padding: 1.45rem;
   background: rgba(8,8,8,0.82);
   transition: border-color 0.15s, transform 0.15s;
-}
-
-.objection-card:nth-child(1),
-.objection-card:nth-child(4) {
-  grid-column: span 7;
-}
-
-.objection-card:nth-child(2),
-.objection-card:nth-child(5) {
-  grid-column: span 5;
-  transform: translateY(24px);
-}
-
-.objection-card:nth-child(3),
-.objection-card:nth-child(6) {
-  transform: translateY(-10px);
+  display: flex;
+  flex-direction: column;
 }
 
 .objection-card:hover {
@@ -1174,54 +1171,57 @@ a:hover { color: var(--accent); }
 }
 
 .objection-header {
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px dashed var(--border);
+  padding: 2rem;
+  opacity: 0.75;
+  border-bottom: none;
 }
 
 .objection-speaker {
   font-weight: bold;
-  font-size: 0.65rem;
+  font-size: 0.85rem;
   color: var(--fg-dimmer);
   letter-spacing: 0.1em;
   margin-right: 0.5rem;
 }
 
 .objection-quote {
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   font-style: italic;
   color: var(--fg-dim);
 }
 
 .objection-ruling {
-  padding-left: 0.25rem;
+  padding: 3rem 2rem;
+  background: var(--accent);
+  color: #000;
+  width: 100%;
 }
 
 .objection-speaker--us {
-  color: var(--accent);
+  color: #000;
 }
 
 .objection-verdict {
-  display: inline-block;
-  font-size: 0.7rem;
+  display: block;
+  font-size: clamp(3rem, 7vw, 120px);
   font-weight: 800;
   font-family: var(--font-heading);
-  letter-spacing: -0.02em;
-  margin-bottom: 0.5rem;
-  padding: 0.15rem 0.5rem;
-  border: 1px solid rgba(204,255,0,0.35);
-  color: var(--accent);
-  background: var(--accent-dim);
+  letter-spacing: -0.05em;
+  margin-bottom: 1.5rem;
+  color: #000;
+  line-height: 0.85;
 }
 
 .objection-ruling p {
-  font-size: 0.8rem;
-  color: var(--fg-dim);
+  font-size: 1.1rem;
+  color: #111;
   line-height: 1.7;
+  max-width: 900px;
 }
 
 .objection-ruling p strong {
-  color: var(--fg);
+  color: #000;
+  font-weight: 900;
 }
 
 /* ==============================
@@ -1259,15 +1259,26 @@ a:hover { color: var(--accent); }
 }
 
 .cta-option--bad {
-  opacity: 0.68;
-  transform: translateY(22px);
+  opacity: 0.5;
+  transform: none;
+  position: relative;
+}
+
+.cta-option--bad::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10;
+  pointer-events: none;
 }
 
 .cta-option--good {
-  border: 2px solid var(--accent);
+  border: none;
+  box-shadow: inset 0 0 0 2px var(--accent);
   position: relative;
   overflow: hidden;
-  transform: translateY(-10px);
+  transform: none;
   background:
     linear-gradient(135deg, rgba(204,255,0,0.12), rgba(8,8,8,0.96) 42%),
     var(--card-bg);
@@ -1362,16 +1373,31 @@ a:hover { color: var(--accent); }
 
 .terminal-install-brutal--big {
   min-width: 420px;
-  padding: 1.5rem 2rem;
+  padding: 2.5rem 4rem;
   border-color: var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .terminal-install-brutal--big .cmd-line {
-  font-size: 1.2rem;
+  font-size: clamp(24px, 5vw, 40px);
+  font-family: sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  margin-bottom: 1rem;
+}
+
+.cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  50% { opacity: 0; }
 }
 
 .terminal-install-brutal--big .cmd-sub {
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 
 .cta-bottom-text {

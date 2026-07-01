@@ -89,10 +89,10 @@ if (particleCanvas) {
       return {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: -Math.random() * 0.5 - 0.2,
+        vx: 0, // No horizontal drift for matrix
+        vy: Math.random() * 0.4 + 0.3, // Falling DOWN, slow reading speed
         life: 0,
-        maxLife: 80 + Math.random() * 160,
+        maxLife: 300 + Math.random() * 200, // Longer life since they move slower
         char: chars[Math.floor(Math.random() * chars.length)],
       }
     }
@@ -104,7 +104,7 @@ if (particleCanvas) {
     function animate() {
       if (!ctx || !canvas) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      ctx.font = '10px "JetBrains Mono", monospace'
+      ctx.font = '12px "JetBrains Mono", monospace' // Slightly larger
       ctx.textAlign = 'center'
 
       particles = particles.filter(p => p.life < p.maxLife)
@@ -117,14 +117,20 @@ if (particleCanvas) {
         p.y += p.vy
         p.life++
 
+        // Occasionally switch characters like real matrix
+        if (Math.random() < 0.05) {
+            p.char = chars[Math.floor(Math.random() * chars.length)];
+        }
+
         const alpha = 1 - p.life / p.maxLife
-        ctx.fillStyle = `rgba(204, 255, 0, ${alpha * 0.35})`
+        ctx.fillStyle = `rgba(204, 255, 0, ${alpha * 0.6})` // Brighter
         ctx.fillText(p.char, p.x, p.y)
 
-        if (p.y < -10) {
-          p.y = canvas.height + 10
+        // Reset if it falls off the BOTTOM
+        if (p.y > canvas.height + 10) {
+          p.y = -10
           p.life = 0
-          p.maxLife = 80 + Math.random() * 160
+          p.maxLife = 300 + Math.random() * 200
         }
       }
 
