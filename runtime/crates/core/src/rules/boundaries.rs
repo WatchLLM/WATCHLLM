@@ -174,8 +174,11 @@ fn classify_import_target(path: &str) -> Option<(String, String)> {
 
 fn find_import_nodes(node: Node) -> Vec<Node> {
     let mut results = Vec::new();
-    if node.kind() == "import_statement" {
-        results.push(node);
+    match node.kind() {
+        "import_statement" | "import_from_statement" => {
+            results.push(node);
+        }
+        _ => {}
     }
     for i in 0..node.child_count() {
         if let Some(child) = node.child(i) {
@@ -186,12 +189,29 @@ fn find_import_nodes(node: Node) -> Vec<Node> {
 }
 
 fn extract_module_specifier(node: Node, source: &str) -> Option<String> {
+    // JS/TS: import X from "module" -> string child with module name
     for i in 0..node.child_count() {
         let child = node.child(i)?;
         if child.kind() == "string" {
-            let raw = child.utf8_text(source.as_bytes()).ok()?;
-            let trimmed = raw.trim_matches(|c| c == '\'' || c == '"' || c == '`');
-            return Some(trimmed.to_string());
+            if let Ok(raw) = child.utf8_text(source.as_bytes()) {
+                let trimmed = raw.trim_matches(|c| c == '\'' || c == '"' || c == '`');
+                return Some(trimmed.to_string());
+            }
+        }
+    }
+    // Python: import module -> dotted_name child
+    for i in 0..node.child_count() {
+        let child = node.child(i)?;
+        if child.kind() == "dotted_name" {
+            if let Ok(raw) = child.utf8_text(source.as_bytes()) {
+                return Some(raw.trim().to_string());
+            }
+        }
+    }
+    // Python: from module import name -> module_name field
+    if let Some(module_node) = node.child_by_field_name("module_name") {
+        if let Ok(raw) = module_node.utf8_text(source.as_bytes()) {
+            return Some(raw.trim().to_string());
         }
     }
     None

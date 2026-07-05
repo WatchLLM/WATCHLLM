@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use tree_sitter::{Query, QueryCursor, Tree};
+use tree_sitter::{Node, Query, QueryCursor, Tree};
 
 use crate::models::KernelViolation;
 use crate::parser::{parse_source, SourceLanguage};
@@ -50,8 +50,95 @@ pub fn find_forbidden_imports(
     source: &str,
     language: SourceLanguage,
 ) -> Result<Vec<KernelViolation>, RuleError> {
+    if language == SourceLanguage::Python {
+        let tree = parse_source(source, language)?;
+        return find_forbidden_python_imports_in_tree(source, &tree, DEFAULT_FORBIDDEN_MODULES);
+    }
     let tree = parse_source(source, language)?;
     find_forbidden_imports_in_tree(source, language, &tree, DEFAULT_FORBIDDEN_MODULES)
+}
+
+fn walk_python_imports(node: Node, source: &str, paths: &mut Vec<String>) {
+    match node.kind() {
+        "import_statement" => {
+            for i in 0..node.child_count() {
+                if let Some(child) = node.child(i) {
+                    if child.kind() == "dotted_name" {
+                        if let Ok(text) = child.utf8_text(source.as_bytes()) {
+                            paths.push(text.trim().to_string());
+                        }
+                    }
+                }
+            }
+        }
+        "import_from_statement" => {
+            if let Some(module_node) = node.child_by_field_name("module_name") {
+                if let Ok(text) = module_node.utf8_text(source.as_bytes()) {
+                    paths.push(text.trim().to_string());
+                }
+            }
+        }
+        "call" => {
+            if let Some(func_node) = node.child_by_field_name("function") {
+                if let Ok(text) = func_node.utf8_text(source.as_bytes()) {
+                    if text.trim() == "__import__" {
+                        if let Some(args) = node.child_by_field_name("arguments") {
+                            for i in 0..args.child_count() {
+                                if let Some(child) = args.child(i) {
+                                    if child.kind() == "string" {
+                                        if let Ok(raw) = child.utf8_text(source.as_bytes()) {
+                                            let stripped = raw.trim().trim_matches(|c| c == '\'' || c == '"');
+                                            paths.push(stripped.to_string());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        _ => {}
+    }
+    for i in 0..node.child_count() {
+        if let Some(child) = node.child(i) {
+            walk_python_imports(child, source, paths);
+        }
+    }
+}
+
+fn extract_python_imports(root: Node, source: &str) -> Vec<String> {
+    let mut paths = Vec::new();
+    walk_python_imports(root, source, &mut paths);
+    paths
+}
+
+fn find_forbidden_python_imports_in_tree(
+    source: &str,
+    tree: &Tree,
+    forbidden_modules: &[&str],
+) -> Result<Vec<KernelViolation>, RuleError> {
+    let root = tree.root_node();
+    let import_paths = extract_python_imports(root, source);
+    let mut violations = Vec::new();
+    let mut seen = HashSet::new();
+
+    for path in import_paths {
+        if seen.insert(path.clone()) {
+            let normalised = path.strip_prefix("node:").unwrap_or(&path);
+            if forbidden_modules.iter().any(|m| normalised == *m || normalised.starts_with(&format!("{}/", m))) {
+                violations.push(KernelViolation {
+                    message: format!("Forbidden import detected: {}", path),
+                    rule: "imports".to_string(),
+                    line: 0,
+                    column: 0,
+                    severity: "error".to_string(),
+                });
+            }
+        }
+    }
+
+    Ok(violations)
 }
 
 pub fn find_forbidden_imports_in_tree(
@@ -246,5 +333,69 @@ mod tests {
 
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].message, "Forbidden import detected: express");
+    }
+
+    // --- Python imports ---
+
+    #[test]
+    fn python_detects_forbidden_bare_import() {
+        let source = r#"
+import child_process
+import os
+        "#;
+
+        let violations = find_forbidden_imports(source, SourceLanguage::Python).unwrap();
+
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule, "imports");
+        assert_eq!(violations[0].message, "Forbidden import detected: child_process");
+    }
+
+    #[test]
+    fn python_detects_forbidden_from_import() {
+        let source = r#"
+from child_process import exec
+from vm import Script
+        "#;
+
+        let violations = find_forbidden_imports(source, SourceLanguage::Python).unwrap();
+
+        assert_eq!(violations.len(), 2);
+    }
+
+    #[test]
+    fn python_detects_forbidden_import_call() {
+        let source = r#"
+module = __import__('child_process')
+        "#;
+
+        let violations = find_forbidden_imports(source, SourceLanguage::Python).unwrap();
+
+        assert_eq!(violations.len(), 1);
+    }
+
+    #[test]
+    fn python_ignores_safe_imports() {
+        let source = r#"
+import os
+import sys
+from datetime import datetime
+        "#;
+
+        let violations = find_forbidden_imports(source, SourceLanguage::Python).unwrap();
+
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn python_recognizes_python_language_variant() {
+        let source = r#"
+import child_process
+        "#;
+
+        let violations = find_forbidden_imports(source, SourceLanguage::Python).unwrap();
+
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule, "imports");
     }
 }

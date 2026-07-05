@@ -1,11 +1,11 @@
 use std::convert::TryFrom;
 
 use crate::models::{KernelExecutionResult, KernelPayload, KernelViolation};
-use crate::parser::{parse_source, SourceLanguage};
+use crate::parser::SourceLanguage;
 use crate::rules::auth_flow::check_auth_flow;
 use crate::rules::boundaries::check_boundaries;
-use crate::rules::imports::{find_forbidden_imports_in_tree, DEFAULT_FORBIDDEN_MODULES};
-use crate::rules::secrets::find_secret_literals_in_tree;
+use crate::rules::imports::find_forbidden_imports;
+use crate::rules::secrets::find_secret_literals;
 use crate::rules::RuleError;
 
 pub fn evaluate_source(source: &str, language: SourceLanguage) -> KernelExecutionResult {
@@ -28,20 +28,17 @@ fn collect_violations(
     source: &str,
     language: SourceLanguage,
 ) -> Result<Vec<KernelViolation>, String> {
-    let tree = parse_source(source, language)
-        .map_err(|err| format!("Parser error: {:?}", err))?;
-
     let mut violations = Vec::new();
 
     append_rule_violations(
         &mut violations,
-        find_secret_literals_in_tree(source, language, &tree),
+        find_secret_literals(source, language),
         "secrets",
     )?;
 
     append_rule_violations(
         &mut violations,
-        find_forbidden_imports_in_tree(source, language, &tree, DEFAULT_FORBIDDEN_MODULES),
+        find_forbidden_imports(source, language),
         "imports",
     )?;
 
@@ -178,8 +175,21 @@ mod tests {
     }
 
     #[test]
+    fn evaluates_python_source() {
+        let source = r#"
+import os
+import sys
+        "#;
+
+        let result = evaluate_source(source, SourceLanguage::Python);
+
+        assert_eq!(result.status, "ok");
+        assert_eq!(result.exit_code, 0);
+    }
+
+    #[test]
     fn unsupported_language_returns_error_result() {
-        let result = evaluate_source_with_language_name("print('hello')", "python");
+        let result = evaluate_source_with_language_name("print('hello')", "ruby");
 
         assert_eq!(result.status, "error");
         assert_eq!(result.exit_code, 2);

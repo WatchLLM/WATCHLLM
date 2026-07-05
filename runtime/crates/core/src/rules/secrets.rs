@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use regex::Regex;
-use tree_sitter::{Query, QueryCursor, Tree};
+use tree_sitter::{Node, Query, QueryCursor, Tree};
 
 use crate::models::KernelViolation;
 use crate::parser::{parse_source, SourceLanguage};
@@ -124,6 +124,10 @@ pub fn find_secret_literals(
     source: &str,
     language: SourceLanguage,
 ) -> Result<Vec<KernelViolation>, RuleError> {
+    if language == SourceLanguage::Python {
+        let tree = parse_source(source, language)?;
+        return find_secret_literals_in_python(source, &tree);
+    }
     let tree = parse_source(source, language)?;
     find_secret_literals_in_tree(source, language, &tree)
 }
@@ -257,6 +261,67 @@ fn unquote(raw: &str) -> String {
     }
 
     trimmed.to_string()
+}
+
+// ---------------------------------------------------------------------------
+// Python secret detection (manual AST walk — no Tree-sitter query)
+// ---------------------------------------------------------------------------
+
+fn is_python_safe_retrieval(source: &str) -> bool {
+    let safe_patterns = build_safe_patterns();
+    safe_patterns.iter().any(|pat| pat.is_match(source))
+}
+
+fn walk_python_secrets(node: Node, source: &str, violations: &mut Vec<KernelViolation>, seen: &mut HashSet<(usize, usize)>) {
+    match node.kind() {
+        "string" => {
+            if let Ok(raw) = node.utf8_text(source.as_bytes()) {
+                let text = raw.trim().trim_matches(|c| c == '\'' || c == '"');
+                if text.is_empty() {
+                    return;
+                }
+
+                // Check value-based patterns
+                let secret_patterns = build_secret_patterns();
+                let matches_value = secret_patterns.iter().any(|pat| pat.is_match(text));
+
+                if !matches_value {
+                    return;
+                }
+
+                // Skip if inside safe retrieval context (os.getenv, etc.)
+                if is_python_safe_retrieval(source) {
+                    return;
+                }
+
+                let dedupe_key = (node.start_byte(), node.end_byte());
+                if seen.insert(dedupe_key) {
+                    let position = node.start_position();
+                    violations.push(KernelViolation {
+                        message: "Secret literal detected".to_string(),
+                        rule: "secrets".to_string(),
+                        line: position.row + 1,
+                        column: position.column + 1,
+                        severity: "error".to_string(),
+                    });
+                }
+            }
+        }
+        _ => {}
+    }
+    for i in 0..node.child_count() {
+        if let Some(child) = node.child(i) {
+            walk_python_secrets(child, source, violations, seen);
+        }
+    }
+}
+
+fn find_secret_literals_in_python(source: &str, tree: &Tree) -> Result<Vec<KernelViolation>, RuleError> {
+    let root = tree.root_node();
+    let mut violations = Vec::new();
+    let mut seen = HashSet::new();
+    walk_python_secrets(root, source, &mut violations, &mut seen);
+    Ok(violations)
 }
 
 // ---------------------------------------------------------------------------
@@ -445,6 +510,78 @@ mod tests {
         "#;
 
         let violations = find_secret_literals(source, SourceLanguage::TypeScript).unwrap();
+
+        assert!(violations.is_empty());
+    }
+
+    // --- Python secrets ---
+
+    #[test]
+    fn python_detects_secret_literal_in_variable() {
+        let source = r#"
+stripe_secret = "sk_live_1234567890abcdef"
+        "#;
+
+        let violations = find_secret_literals(source, SourceLanguage::Python).unwrap();
+
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule, "secrets");
+    }
+
+    #[test]
+    fn python_detects_secret_literal_in_dict() {
+        let source = r#"
+config = {
+    "key": "sk_live_1234567890abcdef"
+}
+        "#;
+
+        let violations = find_secret_literals(source, SourceLanguage::Python).unwrap();
+
+        assert_eq!(violations.len(), 1);
+    }
+
+    #[test]
+    fn python_detects_secret_literal_in_call() {
+        let source = r#"
+api.setup(secret="sk_live_1234567890abcdef")
+        "#;
+
+        let violations = find_secret_literals(source, SourceLanguage::Python).unwrap();
+
+        assert_eq!(violations.len(), 1);
+    }
+
+    #[test]
+    fn python_ignores_safe_retrieval_os_getenv() {
+        let source = r#"
+import os
+my_secret = os.getenv("sk_live_1234567890abcdef")
+        "#;
+
+        let violations = find_secret_literals(source, SourceLanguage::Python).unwrap();
+
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn python_ignores_safe_retrieval_os_environ() {
+        let source = r#"
+config_key = os.environ["sk_live_1234567890abcdef"]
+        "#;
+
+        let violations = find_secret_literals(source, SourceLanguage::Python).unwrap();
+
+        assert!(violations.is_empty());
+    }
+
+    #[test]
+    fn python_ignores_non_secret_string() {
+        let source = r#"
+message = "hello world"
+        "#;
+
+        let violations = find_secret_literals(source, SourceLanguage::Python).unwrap();
 
         assert!(violations.is_empty());
     }

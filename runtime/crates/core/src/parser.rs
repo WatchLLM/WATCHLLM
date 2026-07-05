@@ -6,6 +6,7 @@ pub enum SourceLanguage {
     JavaScript,
     TypeScript,
     Tsx,
+    Python,
 }
 
 impl SourceLanguage {
@@ -14,6 +15,7 @@ impl SourceLanguage {
             SourceLanguage::JavaScript => tree_sitter_javascript::language(),
             SourceLanguage::TypeScript => tree_sitter_typescript::language_typescript(),
             SourceLanguage::Tsx => tree_sitter_typescript::language_tsx(),
+            SourceLanguage::Python => tree_sitter_python::language(),
         }
     }
 }
@@ -34,6 +36,7 @@ impl TryFrom<&str> for SourceLanguage {
             "javascript" | "js" => Ok(SourceLanguage::JavaScript),
             "typescript" | "ts" => Ok(SourceLanguage::TypeScript),
             "tsx" => Ok(SourceLanguage::Tsx),
+            "python" | "py" => Ok(SourceLanguage::Python),
             other => Err(ParseError::UnsupportedLanguage(other.to_string())),
         }
     }
@@ -143,12 +146,29 @@ mod tests {
     }
 
     #[test]
+    fn parses_python_source() {
+        let source = r#"
+import os
+from child_process import exec
+
+def greet(name):
+    return f"hello {name}"
+        "#;
+
+        let tree = parse_source(source, SourceLanguage::Python).unwrap();
+        let root = tree.root_node();
+
+        assert_eq!(root.kind(), "module");
+        assert!(!root.has_error());
+    }
+
+    #[test]
     fn rejects_unsupported_language_name() {
-        let result = parse_source_with_language_name("const x = 1;", "python");
+        let result = parse_source_with_language_name("const x = 1;", "ruby");
 
         assert_eq!(
             result.unwrap_err(),
-            ParseError::UnsupportedLanguage("python".to_string())
+            ParseError::UnsupportedLanguage("ruby".to_string())
         );
     }
 

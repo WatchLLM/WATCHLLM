@@ -125,6 +125,8 @@ fn find_block_nodes(node: Node) -> Vec<Node> {
     let mut results = Vec::new();
     let block_kinds = [
         "function_declaration",
+        "function_definition",
+        "async_function_definition",
         "method_definition",
         "arrow_function",
         "if_statement",
@@ -155,6 +157,8 @@ fn find_block_nodes(node: Node) -> Vec<Node> {
 fn find_top_level_call(node: Node) -> Option<Node> {
     let stop_kinds = [
         "function_declaration",
+        "function_definition",
+        "async_function_definition",
         "method_definition",
         "arrow_function",
         "if_statement",
@@ -172,7 +176,7 @@ fn find_top_level_call(node: Node) -> Option<Node> {
 }
 
 fn find_call_with_boundary<'a>(node: Node<'a>, stop_kinds: &[&str]) -> Option<Node<'a>> {
-    if node.kind() == "call_expression" {
+    if node.kind() == "call_expression" || node.kind() == "call" {
         return Some(node);
     }
 
