@@ -1,0 +1,53 @@
+name: Sync to Open Source Repo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kernel/**'
+      - 'schemas/**'
+      - 'vscode/**'
+      - 'examples/**'
+
+jobs:
+  sync-oss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Private Monorepo
+        uses: actions/checkout@v4
+        with:
+          path: monorepo
+
+      - name: Checkout Public OSS Repo
+        uses: actions/checkout@v4
+        with:
+          repository: watchllm/watchllm-oss
+          token: ${{ secrets.OSS_SYNC_PAT }}
+          path: oss-repo
+
+      - name: Sync Directories
+        run: |
+          # Use rsync to mirror the directories, removing any files in the destination that were deleted in the source
+          rsync -av --delete monorepo/kernel/ oss-repo/kernel/
+          rsync -av --delete monorepo/schemas/ oss-repo/schemas/
+          rsync -av --delete monorepo/vscode/ oss-repo/vscode/
+          rsync -av --delete monorepo/examples/ oss-repo/examples/
+
+      - name: Commit and Push
+        run: |
+          cd oss-repo
+          
+          # Check if there are any changes
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            
+            git add .
+            git commit -m "chore: sync open-core components from upstream"
+            git push origin main
+            
+            echo "Changes synced to watchllm/watchllm-oss successfully."
+          else
+            echo "No changes to sync."
+          fi
