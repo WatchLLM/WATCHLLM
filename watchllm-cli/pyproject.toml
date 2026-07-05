@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "watchllm"
+version = "0.1.0"
+description = "Unified CLI for the WatchLLM governance ecosystem."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "WatchLLM" }
+]
+keywords = [
+  "watchllm",
+  "cli",
+  "agent-governance",
+  "runtime-governance"
+]
+classifiers = [
+  "Development Status :: 1 - Planning",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Security"
+]
+dependencies = [
+  "click>=8.1.0",
+  "watchllm-kernel>=0.1.0",
+  "watchllm-klyd>=0.1.0",
+  "watchllm-orchestrator>=0.1.0",
+]
+
+[project.scripts]
+watchllm = "watchllm_cli.cli:cli"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

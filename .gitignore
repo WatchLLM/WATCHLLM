@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Rust
+target/
+
+# Node / VSCode
+node_modules/
+dist/
+.vscode-test/
+
+# Misc
+.DS_Store
+*.log
+.env
+.klyd/
+
+# Aider
+.aider*

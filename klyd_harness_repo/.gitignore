@@ -1,0 +1,11 @@
+.aider*
+.keel/
+test_repo/
+keel-test/
+*.egg-info/
+.output.txt
+.pytest_cache/
+__pycache__/
+.env
+.klyd/
+.aider.conf.yml

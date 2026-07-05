@@ -1,0 +1,51 @@
+name: WatchLLM Enforce
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  watchllm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install WatchLLM
+        run: |
+          pip install watchllm-cli watchllm-kernel
+
+      - name: Evaluate Changed Files
+        run: |
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | grep -E '\.(js|jsx|ts|tsx)$' || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No JS/TS files changed."
+            exit 0
+          fi
+          
+          echo "Evaluating files against WatchLLM Governance Rules..."
+          FAILURES=0
+          
+          for file in $CHANGED_FILES; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              if ! watchllm evaluate "$file"; then
+                FAILURES=$((FAILURES + 1))
+              fi
+            fi
+          done
+          
+          if [ "$FAILURES" -gt 0 ]; then
+            echo "::error::WatchLLM blocked $FAILURES file(s). See output above for details."
+            exit 1
+          fi
+          
+          echo "All changed files passed WatchLLM evaluation!"

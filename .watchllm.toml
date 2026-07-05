@@ -1,0 +1,3 @@
+[kernel.boundary]
+mock_module = { forbidden = ["foo/bar"] }
+payments = { forbidden = ["stripe"] }

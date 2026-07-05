@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "klyd"
+version = "0.2.2"
+description = "A CLI tool that wraps coding agents via git hooks to inject architectural memory."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "click",
+    "anthropic",
+    "rich"
+]
+
+[tool.setuptools.packages.find]
+include = ["klyd", "klyd.*"]
+
+[project.scripts]
+kl = "klyd.cli:cli"
+
+[tool.setuptools.package-data]
+klyd = ["py.typed"]

@@ -1,0 +1,51 @@
+name: Build WebAssembly
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'crates/**'
+      - '.github/workflows/build-wasm.yml'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+permissions:
+  contents: write # Needed to commit the compiled Wasm files back
+
+jobs:
+  build:
+    name: Build Wasm using wasm-pack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install Clang and WASI Sysroot
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm lld
+          wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sysroot-20.0.tar.gz
+          tar -xzf wasi-sysroot-20.0.tar.gz
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WebAssembly package
+        run: |
+          export CC_wasm32_unknown_unknown="clang"
+          export CFLAGS_wasm32_unknown_unknown="--sysroot=$PWD/wasi-sysroot -D__wasi__ -Ddup(x)=(x)"
+          wasm-pack build crates/wasm --target nodejs --out-dir pkg --release
+
+      - name: Commit and push compiled Wasm files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add crates/wasm/pkg
+          git commit -m "chore: auto-compile WebAssembly package" || echo "No changes to commit"
+          git push
