@@ -14,11 +14,6 @@ jobs:
   pypi-publish:
     name: Build and publish Python distribution to PyPI
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/${{ env.PACKAGE_NAME }}
-    permissions:
-      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,3 +42,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: ${{ env.PACKAGE_NAME }}/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
