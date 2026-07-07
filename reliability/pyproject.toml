@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "watchllm-reliability"
-version = "0.1.0"
+version = "0.1.1"
 description = "Stress-testing and adversarial evaluation framework for autonomous coding agents."
 readme = "README.md"
 requires-python = ">=3.10"
