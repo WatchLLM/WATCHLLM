@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import type { WatchLlmConfig } from './config';
+import * as wasmLoader from './wasmLoader';
 
 export interface KernelExecutionRequest {
     config: WatchLlmConfig;
@@ -98,43 +99,23 @@ function parseStdoutJson(stdout: string): { ok: true; value: unknown } | { ok: f
 export function runKernelCheck(request: KernelExecutionRequest): Promise<KernelExecutionResult> {
     const timeoutMs = request.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-    if (request.config.useWasm) {
-        try {
-            // Dynamically load to avoid crashing the extension if Wasm module is not built
-            const wasm = require('../../runtime/crates/wasm/pkg/watchllm_wasm.js');
-            const configJson = JSON.stringify({ language: request.language });
-            const resultJson = wasm.evaluate_source(request.documentText, configJson);
-            
-            const parsed = parseStdoutJson(resultJson);
-            if (!parsed.ok) {
-                return Promise.resolve({
-                    status: 'malformedJson',
-                    exitCode: 2,
-                    signal: null,
-                    stdout: resultJson,
-                    stderr: '',
-                    json: null,
-                    errorMessage: parsed.message
-                });
-            }
-            
+    if (request.config.useWasm && wasmLoader.isAvailable()) {
+        const wasmResult = wasmLoader.evaluate(request.documentText, request.language);
+
+        if (wasmResult === null) {
+            // Wasm loader fell back (binary unavailable or errored) — fall through to Python subprocess.
+        } else {
+            // Map the real Rust KernelExecutionResult schema:
+            //   { status, exit_code, payload: { allowed, violations } | null, error }
+            const exitCode = wasmResult.exit_code ?? (wasmResult.payload?.allowed === false ? 1 : 0);
+
             return Promise.resolve({
                 status: 'completed',
-                exitCode: 0,
+                exitCode,
                 signal: null,
-                stdout: resultJson,
+                stdout: JSON.stringify(wasmResult),
                 stderr: '',
-                json: parsed.value
-            });
-        } catch (error) {
-            return Promise.resolve({
-                status: 'spawnError',
-                exitCode: null,
-                signal: null,
-                stdout: '',
-                stderr: '',
-                json: null,
-                errorMessage: `Wasm execution failed. Is the Wasm module built? Error: ${error instanceof Error ? error.message : String(error)}`
+                json: wasmResult
             });
         }
     }
