@@ -3,3 +3,12 @@
 
 [kernel]
 mode = "enforce"   # "enforce" blocks saves; "shadow" logs only
+
+[kernel.boundary]
+mock_module = { forbidden = ["foo/bar"] }
+payments = { forbidden = ["stripe"] }
+
+# [watchllm:auto] — managed by `kl export-kernel-config`. Do not edit.
+[kernel.boundary]
+mock_module = { forbidden = ["foo/bar"] }
+payments = { forbidden = ["stripe"] }

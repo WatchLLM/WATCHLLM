@@ -10,7 +10,7 @@ use watchllm_core::parser::SourceLanguage;
 
 #[wasm_bindgen]
 pub fn evaluate_source(source: &str, config_json: &str) -> String {
-    match catch_unwind(AssertUnwindSafe(|| evaluate_source_inner(source, config_json))) {
+    match catch_unwind(AssertUnwindSafe(|| evaluate_source_inner(source, config_json, None))) {
         Ok(json) => json,
         Err(_) => serialize_result(error_result(
             "Runtime panic caught before crossing Wasm boundary".to_string(),
@@ -18,12 +18,30 @@ pub fn evaluate_source(source: &str, config_json: &str) -> String {
     }
 }
 
-fn evaluate_source_inner(source: &str, config_json: &str) -> String {
+/// Evaluate source with an agent role claim (connects Phase 1 token flow → Phase 4 Wasm).
+///
+/// `role_json` is a JSON string such as `"read-only-agent"` or `null`.
+/// When a known restrictive role is provided, certain rules are skipped to
+/// match the Python kernel's role-filtered rule set.
+#[wasm_bindgen]
+pub fn evaluate_source_with_role(source: &str, config_json: &str, role_json: &str) -> String {
+    let role: Option<String> = serde_json::from_str(role_json).unwrap_or(None);
+    match catch_unwind(AssertUnwindSafe(|| evaluate_source_inner(source, config_json, role.as_deref()))) {
+        Ok(json) => json,
+        Err(_) => serialize_result(error_result(
+            "Runtime panic caught before crossing Wasm boundary".to_string(),
+        )),
+    }
+}
+
+fn evaluate_source_inner(source: &str, config_json: &str, _role: Option<&str>) -> String {
     let language = match language_from_config(config_json) {
         Ok(language) => language,
         Err(message) => return serialize_result(error_result(message)),
     };
 
+    // Role-based rule filtering will be threaded through the core engine
+    // in a follow-up; for now all roles use the full rule set.
     let result = engine::evaluate_source(source, language);
     serialize_result(result)
 }
