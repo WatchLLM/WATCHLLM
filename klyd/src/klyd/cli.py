@@ -863,49 +863,123 @@ def run_agent(agent_cmd: tuple[str, ...]) -> None:
 
 
 @main.command("export-kernel-config")
-def export_kernel_config() -> None:
-    """Export boundary decisions to .watchllm.toml."""
+@click.option(
+    "--threshold",
+    default=0.8,
+    show_default=True,
+    type=float,
+    help="Minimum confidence score for a decision to be exported (0.0–1.0).",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Print the generated TOML to stdout without writing any files.",
+)
+@click.option(
+    "--output",
+    default=None,
+    help="Write TOML to this path instead of the auto-discovered .watchllm.toml.",
+)
+def export_kernel_config(threshold: float, dry_run: bool, output: str | None) -> None:
+    """Export high-confidence klyd decisions to .watchllm.toml.
+
+    Merges boundary rules and forbidden modules derived from klyd's
+    architectural memory into the project's kernel config. Auto-generated
+    sections are marked and replaced on each run; user-edited sections are
+    preserved.
+    """
     ensure_database_exists(db_path())
-    
+
     with sqlite3.connect(db_path()) as conn:
         conn.row_factory = sqlite3.Row
         rows = conn.execute(
             """
-            SELECT module, file_patterns
+            SELECT module, file_patterns, decision, confidence
             FROM decisions
             WHERE event_type = 'NEW'
               AND archived = 0
               AND flagged = 0
-              AND confidence >= 0.8
-            """
+              AND confidence >= ?
+            ORDER BY confidence DESC
+            """,
+            (threshold,),
         ).fetchall()
 
     if not rows:
+        click.echo(f"No decisions meet the confidence threshold ({threshold}). Nothing exported.")
         return
 
-    # Build the new [kernel.boundary] section
-    toml_lines = ["[kernel.boundary]"]
+    # Separate boundary decisions from forbidden-module decisions.
+    boundary: dict[str, list[str]] = {}
+    forbidden_modules: list[str] = []
+
     for row in rows:
         module = row["module"]
         patterns = decode_file_patterns(row["file_patterns"])
-        if module and module != "unknown" and patterns:
-            # We treat patterns as forbidden imports for simplicity
-            toml_lines.append(f'{module} = {{ forbidden = {json.dumps(patterns)} }}')
+        if not module or module == "unknown":
+            continue
+        if patterns:
+            # Decisions with file_patterns become boundary rules.
+            if module not in boundary:
+                boundary[module] = []
+            boundary[module].extend(p for p in patterns if p not in boundary[module])
+        else:
+            # Decisions without file_patterns become forbidden_modules.
+            if module not in forbidden_modules:
+                forbidden_modules.append(module)
 
-    config_file = Path.cwd() / ".watchllm.toml"
-    if not config_file.exists():
-        content = ""
+    if dry_run:
+        # Print what would be written without touching the filesystem.
+        from watchllm_kernel.config_merge import _AUTO_MARKER, _render_boundary_section, _render_forbidden_modules
+        click.echo("# --- dry-run preview (nothing written) ---")
+        if forbidden_modules:
+            click.echo(f"\n{_AUTO_MARKER}\n[kernel]\n{_render_forbidden_modules(forbidden_modules)}")
+        if boundary:
+            click.echo(f"\n{_AUTO_MARKER}\n{_render_boundary_section(boundary)}")
+        click.echo(f"\n# {len(rows)} decision(s) at threshold ≥ {threshold}")
+        return
+
+    # Determine target file
+    if output:
+        config_file = Path(output)
     else:
-        content = config_file.read_text(encoding="utf-8")
+        config_file = Path.cwd() / ".watchllm.toml"
 
-    # Replace existing boundary section if present
-    marker = "[kernel.boundary]"
-    if marker in content:
-        content = content[:content.find(marker)].strip()
+    try:
+        from watchllm_kernel.config_merge import merge_toml_patch
+        merge_toml_patch(
+            base_path=config_file,
+            forbidden_modules=forbidden_modules or None,
+            boundary=boundary or None,
+        )
+        click.echo(
+            f"Exported {len(rows)} decision(s) (threshold ≥ {threshold}) → {config_file}"
+        )
+        if forbidden_modules:
+            click.echo(f"  forbidden_modules: {', '.join(forbidden_modules)}")
+        if boundary:
+            click.echo(f"  boundary rules:    {', '.join(boundary.keys())}")
+    except ImportError:
+        # watchllm_kernel not installed — fall back to raw TOML write.
+        click.echo(
+            "Warning: watchllm_kernel not installed; using legacy TOML writer.",
+            err=True,
+        )
+        toml_lines = ["[kernel.boundary]"]
+        for module, patterns in boundary.items():
+            import json as _json
+            toml_lines.append(f'{module} = {{ forbidden = {_json.dumps(patterns)} }}')
 
-    new_content = content.strip() + "\n\n" + "\n".join(toml_lines) + "\n"
-    config_file.write_text(new_content.lstrip(), encoding="utf-8")
-    click.echo(f"Exported {len(rows)} boundary rules to .watchllm.toml")
+        config_file = Path(output) if output else Path.cwd() / ".watchllm.toml"
+        content = config_file.read_text(encoding="utf-8") if config_file.exists() else ""
+        marker = "[kernel.boundary]"
+        if marker in content:
+            content = content[:content.find(marker)].strip()
+        new_content = content.strip() + "\n\n" + "\n".join(toml_lines) + "\n"
+        config_file.write_text(new_content.lstrip(), encoding="utf-8")
+        click.echo(f"Exported {len(rows)} boundary rules to {config_file}")
+
 
 
 if __name__ == "__main__":
