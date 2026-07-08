@@ -35,6 +35,7 @@ dependencies = [
   "watchllm-kernel>=0.1.0",
   "watchllm-klyd>=0.1.0",
   "watchllm-orchestrator>=0.1.0",
+  "rich>=13.0.0",
 ]
 
 [project.scripts]

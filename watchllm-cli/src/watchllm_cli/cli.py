@@ -18,6 +18,11 @@ from pathlib import Path
 from typing import Optional
 
 import click
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+console = Console()
 
 # ---------------------------------------------------------------------------
 # Version
@@ -67,20 +72,22 @@ def init_cmd(force: bool) -> None:
     .watchllm.toml config, and runs klyd init if available.
     """
     project_root = Path.cwd()
+    
+    console.print("[bold blue]Initializing WatchLLM Governance...[/bold blue]\n")
 
     # --- .watchllm/ directory ---
     watchllm_dir = project_root / ".watchllm"
     logs_dir = watchllm_dir / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
-    click.echo(f"  OK: Created {watchllm_dir}/")
+    console.print(f"  [green][/[/green] Created [cyan]{watchllm_dir}/[/cyan]")
 
     # --- .watchllm.toml config ---
     config_file = project_root / ".watchllm.toml"
     if config_file.exists() and not force:
-        click.echo(f"  SKIP: {config_file.name} already exists (use --force to overwrite)")
+        console.print(f"  [yellow]?[/[/yellow] [cyan]{config_file.name}[/cyan] already exists (use --force to overwrite)")
     else:
         _write_default_config(config_file)
-        click.echo(f"  OK: Created {config_file.name}")
+        console.print(f"  [green][/[/green] Created [cyan]{config_file.name}[/cyan]")
 
     # --- klyd init ---
     try:
@@ -93,21 +100,20 @@ def init_cmd(force: bool) -> None:
                 cwd=project_root,
             )
             if result.returncode == 0:
-                click.echo("  OK: klyd initialised (.klyd/ directory + git hooks)")
+                console.print("  [green][/[/green] klyd initialised (.klyd/ directory + git hooks)")
             else:
-                # klyd init may fail if already initialised — that's fine.
                 stderr = result.stderr.strip()
                 if "already" in stderr.lower():
-                    click.echo("  SKIP: klyd already initialised")
+                    console.print("  [yellow]?[/[/yellow] klyd already initialised")
                 else:
-                    click.echo(f"  WARN: klyd init returned exit {result.returncode}: {stderr}")
+                    console.print(f"  [red]?[/[/red] klyd init returned exit {result.returncode}: {stderr}")
         else:
-            click.echo("  SKIP: klyd not installed (run: pip install -e klyd/)")
+            console.print("  [yellow]?[/[/yellow] klyd not installed (run: pip install -e klyd/)")
     except Exception as exc:
-        click.echo(f"  WARN: klyd init failed: {exc}")
+        console.print(f"  [red]?[/[/red] klyd init failed: {exc}")
 
-    click.echo()
-    click.echo("WatchLLM initialised. Run `watchllm status` to verify.")
+    console.print()
+    console.print(Panel("[bold green]WatchLLM Initialised Successfully![/bold green]\n\nRun [bold cyan]watchllm status[/bold cyan] to verify your installation.", border_style="green", expand=False))
 
 
 # ---------------------------------------------------------------------------
@@ -147,8 +153,10 @@ def _check_command(name: str, cmd: list[str]) -> tuple[str, str, bool]:
 @cli.command("status")
 def status_cmd() -> None:
     """Check the health of all installed WatchLLM components."""
-    click.echo("WatchLLM Component Status")
-    click.echo("=" * 40)
+    table = Table(title="WatchLLM Component Status", show_header=True, header_style="bold magenta")
+    table.add_column("Component", style="cyan", width=20)
+    table.add_column("Status", width=12)
+    table.add_column("Details", style="dim")
 
     all_ok = True
 
@@ -161,37 +169,43 @@ def status_cmd() -> None:
 
     for name, import_path in components:
         label, version, ok = _check_module(name, import_path)
-        status = click.style(f"OK: {version}", fg="green") if ok else click.style("MISSING: not installed", fg="red")
-        click.echo(f"  {label:20s} {status}")
+        status_text = "[bold green]OK[/bold green]" if ok else "[bold red]MISSING[/bold red]"
+        details_text = version if ok else "not installed"
+        table.add_row(label, status_text, details_text)
         if not ok:
             all_ok = False
 
     # Rust runtime (optional)
     label, version, ok = _check_command("Runtime (Rust)", ["watchllm-cli", "--version"])
-    status = click.style(f"OK: {version}", fg="green") if ok else click.style("SKIP: not built", fg="yellow")
-    click.echo(f"  {'Runtime (Rust)':20s} {status}")
+    status_text = "[bold green]OK[/bold green]" if ok else "[bold yellow]SKIP[/bold yellow]"
+    details_text = version if ok else "not built"
+    table.add_row("Runtime (Rust)", status_text, details_text)
 
     # Config file
-    from watchllm_kernel.config import load_config
-
-    config = load_config()
-    if config.config_path:
-        click.echo(f"  {'Config':20s} {click.style(f'OK: {config.config_path}', fg='green')}")
-    else:
-        click.echo(f"  {'Config':20s} {click.style('SKIP: no .watchllm.toml found', fg='yellow')}")
+    try:
+        from watchllm_kernel.config import load_config
+        config = load_config()
+        if config.config_path:
+            table.add_row("Config", "[bold green]OK[/bold green]", str(config.config_path))
+        else:
+            table.add_row("Config", "[bold yellow]SKIP[/bold yellow]", "no .watchllm.toml found")
+    except ImportError:
+        table.add_row("Config", "[bold red]ERROR[/bold red]", "watchllm_kernel not found")
 
     # klyd database
     klyd_db = Path.cwd() / ".klyd" / "memory.db"
     if klyd_db.exists():
-        click.echo(f"  {'klyd Memory':20s} {click.style('OK: .klyd/memory.db', fg='green')}")
+        table.add_row("klyd Memory", "[bold green]OK[/bold green]", ".klyd/memory.db")
     else:
-        click.echo(f"  {'klyd Memory':20s} {click.style('SKIP: not initialised', fg='yellow')}")
+        table.add_row("klyd Memory", "[bold yellow]SKIP[/bold yellow]", "not initialised")
 
-    click.echo()
+    console.print(table)
+    console.print()
+    
     if all_ok:
-        click.echo(click.style("All core components installed.", fg="green"))
+        console.print("[bold green]All core components installed and ready.[/bold green]")
     else:
-        click.echo(click.style("Some components are missing. See above.", fg="red"))
+        console.print("[bold red]Some components are missing. See table above.[/bold red]")
         sys.exit(1)
 
 
@@ -247,6 +261,8 @@ def evaluate_cmd(
     if config_path:
         argv.extend(["--config", config_path])
 
+    # We do not wrap this in Rich because the kernel CLI formats its own output
+    # or prints raw JSON which must remain valid for stdout piping.
     exit_code = kernel_main(argv)
     ctx.exit(exit_code)
 
@@ -284,9 +300,19 @@ def spawn_cmd(
 
     Delegates to the orchestrator's agent spawner.
     """
+    console.print(Panel(
+        f"[bold blue]WatchLLM Orchestrator[/bold blue]\n"
+        f"[dim]Spawning Agent:[/dim] [bold cyan]{agent_command}[/bold cyan]\n"
+        f"[dim]Identity Role:[/dim] [bold magenta]{role}[/bold magenta]\n"
+        f"[dim]Permissions:[/dim]   [green]{permissions}[/green]",
+        title="Session Gateway", border_style="blue", expand=False
+    ))
+    
     try:
         from orchestrator.spawner import AgentSpawner
 
+        # AgentSpawner().spawn uses subprocess to run the agent interactively.
+        # We don't wrap this in a rich spinner because it will swallow stdout.
         exit_code = AgentSpawner().spawn(
             role=role,
             command=agent_command,
@@ -294,11 +320,11 @@ def spawn_cmd(
             expires_minutes=expires_minutes,
         )
     except ImportError:
-        raise click.ClickException(
-            "watchllm-orchestrator is not installed. Run: pip install -e orchestrator/"
-        )
+        console.print("[bold red]watchllm-orchestrator is not installed.[/bold red] Run: [cyan]pip install -e orchestrator/[/cyan]")
+        ctx.exit(1)
     except ValueError as exc:
-        raise click.ClickException(str(exc))
+        console.print(f"[bold red]Error:[/bold red] {exc}")
+        ctx.exit(1)
 
     ctx.exit(exit_code)
 
