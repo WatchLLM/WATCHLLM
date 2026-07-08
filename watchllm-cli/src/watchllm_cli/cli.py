@@ -435,6 +435,12 @@ def spawn_cmd(
         return
 
     # Show the session gateway panel
+    import uuid
+    from datetime import datetime, timezone, timedelta
+
+    trace_id = str(uuid.uuid4())
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)).strftime("%H:%M UTC")
+
     info = Text()
     info.append("  Agent Command  ", style="dim")
     info.append(f"{agent_command}\n", style="bold cyan")
@@ -443,7 +449,12 @@ def spawn_cmd(
     info.append("  Permissions    ", style="dim")
     info.append(f"{permissions}\n", style="green")
     info.append("  Token TTL      ", style="dim")
-    info.append(f"{expires_minutes} min\n", style="yellow")
+    info.append(f"{expires_minutes} min", style="yellow")
+    info.append("  (expires ", style="dim")
+    info.append(expires_at, style="yellow")
+    info.append(")\n", style="dim")
+    info.append("  Trace ID       ", style="dim")
+    info.append(f"{trace_id}\n", style="dim cyan")
 
     _print_panel(info, subcommand="spawn", border_style="blue")
 

@@ -11,6 +11,7 @@ from watchllm_kernel.config import WatchLLMConfig, load_config
 from watchllm_kernel.engine import ENFORCE_MODE, SHADOW_MODE, evaluate_source
 from watchllm_kernel.models import Decision
 from watchllm_kernel.reporting import format_human_report, write_block_log
+from watchllm_kernel.token_auth import extract_role_from_env, get_trace_id
 from watchllm_kernel.rules.auth_flow import AuthFlowRule
 from watchllm_kernel.rules.boundary import BoundaryRule
 from watchllm_kernel.rules.forbidden_imports import ForbiddenImportRule
@@ -146,6 +147,8 @@ def _infer_language(file_path: str | None) -> str | None:
         return "typescript"
     if suffix in (".js", ".jsx", ".mjs", ".cjs"):
         return "javascript"
+    if suffix == ".py":
+        return "python"
     return None
 
 
@@ -195,18 +198,9 @@ def main(argv: list[str] | None = None) -> int:
     # CLI --mode flag overrides config file; config file overrides default.
     mode = args.mode or config.mode or ENFORCE_MODE
 
-    # --- token validation (B1) ---
-    token = os.environ.get("WATCHLLM_AGENT_TOKEN")
-    role = None
-    if token:
-        try:
-            from orchestrator.identity import IdentityManager
-            payload = IdentityManager().validate_token(token)
-            role = payload.get("role")
-        except ImportError:
-            print("Warning: WATCHLLM_AGENT_TOKEN present but orchestrator is not installed.", file=sys.stderr)
-        except Exception as exc:
-            print(f"Warning: Failed to validate WATCHLLM_AGENT_TOKEN: {exc}", file=sys.stderr)
+    # --- token validation ---
+    role = extract_role_from_env()
+    trace_id = get_trace_id()
 
     # --- evaluate ---
     rules = build_default_rules(config, role=role)

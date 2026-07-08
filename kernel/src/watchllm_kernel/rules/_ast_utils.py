@@ -36,6 +36,8 @@ def infer_language_from_path(file_path: str | None) -> str:
         return "tsx"
     if lower.endswith(".ts"):
         return "typescript"
+    if lower.endswith(".py"):
+        return "python"
     return "javascript"
 
 
