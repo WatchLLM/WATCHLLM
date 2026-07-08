@@ -19,10 +19,9 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from rich.columns import Columns
+from rich import box as rich_box
 from rich.console import Console
 from rich.panel import Panel
-from rich.rule import Rule
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
@@ -43,47 +42,41 @@ except ImportError:
 # Shared branding helpers
 # ---------------------------------------------------------------------------
 
-WATCHLLM_ASCII_ART = """\
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-░  ░░░░  ░░░      ░░░        ░░░      ░░░  ░░░░  ░░  ░░░░░░░░  ░░░░░░░░  ░░░░  ░
-▒  ▒  ▒  ▒▒  ▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒   ▒▒   ▒
-▓        ▓▓  ▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓▓▓▓▓        ▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓▓        ▓
-█   ██   ██        █████  █████  ████  ██  ████  ██  ████████  ████████  █  █  █
-█  ████  ██  ████  █████  ██████      ███  ████  ██        ██        ██  ████  █
-████████████████████████████████████████████████████████████████████████████████"""
-
-WATCHLLM_ASCII_FALLBACK = "W A T C H L L M"
-
-
-def _print_header(subcommand: Optional[str] = None) -> None:
-    """Print the consistent WatchLLM signature header before every command."""
-    console.print()
-    try:
-        console.print(f"[bold cyan]{WATCHLLM_ASCII_ART}[/bold cyan]")
-    except UnicodeEncodeError:
-        console.print(f"[bold cyan]{WATCHLLM_ASCII_FALLBACK}[/bold cyan]")
-
-    subtitle = Text()
-    subtitle.append("Governance-aware orchestration for autonomous coding agents", style="dim")
-    subtitle.append("  ·  ", style="dim")
-    subtitle.append(f"v{__version__}", style="bold cyan")
-
+def _header_title(subcommand: Optional[str] = None) -> Text:
+    """Build the panel title: 'watchllm  ·  <subcommand>'."""
+    t = Text()
+    t.append(" watchllm ", style="bold cyan")
     if subcommand:
-        subtitle.append("  ·  ", style="dim")
-        subtitle.append(subcommand, style="bold magenta")
+        t.append("  ·  ", style="dim")
+        t.append(subcommand, style="bold magenta")
+    t.append(f"  v{__version__}", style="dim")
+    t.append(" ")
+    return t
 
-    console.print(subtitle)
-    console.print(Rule(style="cyan dim"))
-    console.print()
+
+def _make_panel(content, subcommand: Optional[str] = None, border_style: str = "cyan") -> Panel:
+    """Wrap any Rich renderable in the signature WatchLLM panel."""
+    return Panel(
+        content,
+        title=_header_title(subcommand),
+        title_align="left",
+        border_style=border_style,
+        box=rich_box.ROUNDED,
+        padding=(1, 2),
+    )
 
 
-def _print_error(title: str, message: str, hint: Optional[str] = None) -> None:
-    """Print a consistently styled error panel."""
-    body = f"[bold white]{message}[/bold white]"
+def _print_panel(content, subcommand: Optional[str] = None, border_style: str = "cyan") -> None:
+    console.print(_make_panel(content, subcommand, border_style))
+
+
+def _print_error(subcommand: str, title: str, message: str, hint: Optional[str] = None) -> None:
+    body = Text()
+    body.append(f"  {title}\n\n", style="bold red")
+    body.append(message)
     if hint:
-        body += f"\n\n[dim]{hint}[/dim]"
-    console.print(Panel(body, title=f"[bold red]  {title}[/bold red]", border_style="red", expand=False))
-    console.print()
+        body.append(f"\n\n{hint}", style="dim")
+    _print_panel(body, subcommand=subcommand, border_style="red")
 
 
 # ---------------------------------------------------------------------------
@@ -91,44 +84,40 @@ def _print_error(title: str, message: str, hint: Optional[str] = None) -> None:
 # ---------------------------------------------------------------------------
 
 class WatchLLMGroup(click.Group):
-    """Click group that prints the signature header and rich-formats errors."""
+    """Click group that always wraps output in the signature panel."""
+
+    def resolve_command(self, ctx: click.Context, args: list):
+        try:
+            return super().resolve_command(ctx, args)
+        except click.UsageError:
+            attempted = args[0] if args else "?"
+            _print_error(
+                attempted,
+                "Unknown Command",
+                f"'{attempted}' is not a recognised watchllm command.",
+                hint=f"Run  watchllm -h  to see available commands.",
+            )
+            sys.exit(2)
 
     def invoke(self, ctx: click.Context) -> None:  # type: ignore[override]
-        # Print header for every invocation that has a real subcommand.
-        # (The bare `watchllm` case is handled in the callback.)
-        if ctx.protected_args or ctx.args:
-            subcommand_name = (ctx.protected_args + ctx.args)[0]
-            _print_header(subcommand_name)
         try:
             super().invoke(ctx)
         except click.MissingParameter as exc:
+            subcmd = ctx.invoked_subcommand or ""
             _print_error(
+                subcmd,
                 "Missing Parameter",
-                str(exc.format_message()),
-                hint=f"Run [bold cyan]watchllm {ctx.invoked_subcommand or ''} -h[/bold cyan] to see all available options.",
+                exc.format_message(),
+                hint=f"Run  watchllm {subcmd} -h  to see all options.",
             )
             sys.exit(2)
         except click.UsageError as exc:
+            subcmd = ctx.invoked_subcommand or ""
             _print_error(
+                subcmd,
                 "Usage Error",
                 exc.format_message(),
-                hint=f"Run [bold cyan]watchllm {ctx.invoked_subcommand or ''} -h[/bold cyan] to see all available options.",
-            )
-            sys.exit(2)
-
-    def resolve_command(
-        self, ctx: click.Context, args: list
-    ):
-        try:
-            return super().resolve_command(ctx, args)
-        except click.UsageError as exc:
-            # Unknown command — show a styled header then a nice error
-            _print_header()
-            attempted = args[0] if args else "?"
-            _print_error(
-                "Unknown Command",
-                f"[bold yellow]{attempted}[/bold yellow] is not a recognised watchllm command.",
-                hint="Run [bold cyan]watchllm -h[/bold cyan] to see available commands.",
+                hint=f"Run  watchllm {subcmd} -h  to see all options.",
             )
             sys.exit(2)
 
@@ -147,8 +136,12 @@ class WatchLLMGroup(click.Group):
 def cli(ctx: click.Context) -> None:
     """WatchLLM — Governance-aware orchestration for autonomous coding agents."""
     if ctx.invoked_subcommand is None:
-        _print_header()
-        click.echo(ctx.get_help())
+        _print_panel(
+            Text.from_markup(
+                "[bold white]Governance-aware orchestration for autonomous coding agents.[/bold white]\n\n"
+                + ctx.get_help()
+            )
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -159,69 +152,69 @@ def cli(ctx: click.Context) -> None:
 def _write_default_config(target: Path) -> None:
     """Write the default .watchllm.toml template."""
     from watchllm_kernel.config import DEFAULT_CONFIG_TEMPLATE
-
     target.write_text(DEFAULT_CONFIG_TEMPLATE, encoding="utf-8")
 
 
 @cli.command("init")
-@click.option(
-    "--force",
-    is_flag=True,
-    default=False,
-    help="Overwrite existing .watchllm.toml if present.",
-)
+@click.option("--force", is_flag=True, default=False, help="Overwrite existing .watchllm.toml if present.")
 def init_cmd(force: bool) -> None:
-    """Initialise a project for WatchLLM governance.
-
-    Creates the .watchllm/ directory structure, generates a default
-    .watchllm.toml config, and runs klyd init if available.
-    """
+    """Initialise a project for WatchLLM governance."""
     project_root = Path.cwd()
+    lines = Text()
 
     # --- .watchllm/ directory ---
     watchllm_dir = project_root / ".watchllm"
     logs_dir = watchllm_dir / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
-    console.print(f"  [bold green]✓[/bold green]  Created [cyan]{watchllm_dir}/[/cyan]")
+    lines.append("  ✓  ", style="bold green")
+    lines.append("Created  ", style="bold white")
+    lines.append(f"{watchllm_dir}/\n", style="cyan")
 
     # --- .watchllm.toml config ---
     config_file = project_root / ".watchllm.toml"
     if config_file.exists() and not force:
-        console.print(f"  [bold yellow]~[/bold yellow]  [cyan]{config_file.name}[/cyan] already exists  [dim](use --force to overwrite)[/dim]")
+        lines.append("  ~  ", style="bold yellow")
+        lines.append(f"{config_file.name}", style="cyan")
+        lines.append(" already exists  ", style="bold white")
+        lines.append("(--force to overwrite)\n", style="dim")
     else:
         _write_default_config(config_file)
-        console.print(f"  [bold green]✓[/bold green]  Created [cyan]{config_file.name}[/cyan]")
+        lines.append("  ✓  ", style="bold green")
+        lines.append("Created  ", style="bold white")
+        lines.append(f"{config_file.name}\n", style="cyan")
 
     # --- klyd init ---
     try:
         kl_path = shutil.which("kl")
         if kl_path:
-            result = subprocess.run(
-                [kl_path, "init"],
-                capture_output=True,
-                text=True,
-                cwd=project_root,
-            )
+            result = subprocess.run([kl_path, "init"], capture_output=True, text=True, cwd=project_root)
             if result.returncode == 0:
-                console.print("  [bold green]✓[/bold green]  klyd initialised  [dim](.klyd/ directory + git hooks)[/dim]")
+                lines.append("  ✓  ", style="bold green")
+                lines.append("klyd initialised  ", style="bold white")
+                lines.append("(.klyd/ + git hooks)\n", style="dim")
             else:
                 stderr = result.stderr.strip()
                 if "already" in stderr.lower():
-                    console.print("  [bold yellow]~[/bold yellow]  klyd already initialised")
+                    lines.append("  ~  ", style="bold yellow")
+                    lines.append("klyd already initialised\n", style="bold white")
                 else:
-                    console.print(f"  [bold red]✗[/bold red]  klyd init returned exit {result.returncode}: {stderr}")
+                    lines.append("  ✗  ", style="bold red")
+                    lines.append(f"klyd init exit {result.returncode}: {stderr}\n", style="bold white")
         else:
-            console.print("  [bold yellow]~[/bold yellow]  klyd not installed  [dim](run: pip install -e klyd/)[/dim]")
+            lines.append("  ~  ", style="bold yellow")
+            lines.append("klyd not installed  ", style="bold white")
+            lines.append("(pip install -e klyd/)\n", style="dim")
     except Exception as exc:
-        console.print(f"  [bold red]✗[/bold red]  klyd init failed: {exc}")
+        lines.append("  ✗  ", style="bold red")
+        lines.append(f"klyd init failed: {exc}\n", style="bold white")
 
-    console.print()
-    console.print(Panel(
-        "[bold green]WatchLLM Initialised Successfully![/bold green]\n\n"
-        "Run [bold cyan]watchllm status[/bold cyan] to verify your installation.",
-        border_style="green",
-        expand=False,
-    ))
+    lines.append("\n")
+    lines.append("WatchLLM initialised.", style="bold green")
+    lines.append("  Run ", style="")
+    lines.append("watchllm status", style="bold cyan")
+    lines.append(" to verify.", style="")
+
+    _print_panel(lines, subcommand="init", border_style="green")
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +223,6 @@ def init_cmd(force: bool) -> None:
 
 
 def _check_module(name: str, import_path: str) -> tuple[str, str, bool]:
-    """Try to import a module and return (name, version, ok)."""
     try:
         mod = importlib.import_module(import_path)
         version = getattr(mod, "__version__", "installed")
@@ -240,14 +232,8 @@ def _check_module(name: str, import_path: str) -> tuple[str, str, bool]:
 
 
 def _check_command(name: str, cmd: list[str]) -> tuple[str, str, bool]:
-    """Try to run a command and return (name, version/status, ok)."""
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
         version = result.stdout.strip().split("\n")[0] if result.stdout.strip() else "available"
         return (name, version, True)
     except FileNotFoundError:
@@ -261,59 +247,42 @@ def _check_command(name: str, cmd: list[str]) -> tuple[str, str, bool]:
 @cli.command("status")
 def status_cmd() -> None:
     """Check the health of all installed WatchLLM components."""
-    table = Table(show_header=True, header_style="bold magenta", box=None, padding=(0, 2))
-    table.add_column("Component", style="cyan", width=20)
-    table.add_column("Status", width=10)
+    table = Table(show_header=True, header_style="bold magenta", box=rich_box.SIMPLE, padding=(0, 2))
+    table.add_column("Component", style="cyan", width=18)
+    table.add_column("Status", width=12)
     table.add_column("Details", style="dim")
 
     all_ok = True
 
-    # Python components
-    components = [
-        ("Kernel", "watchllm_kernel"),
-        ("klyd", "klyd"),
-        ("Orchestrator", "orchestrator"),
-    ]
-
-    for name, import_path in components:
+    for name, import_path in [("Kernel", "watchllm_kernel"), ("klyd", "klyd"), ("Orchestrator", "orchestrator")]:
         label, version, ok = _check_module(name, import_path)
-        status_text = "[bold green]● OK[/bold green]" if ok else "[bold red]● MISSING[/bold red]"
-        details_text = version if ok else "not installed"
-        table.add_row(label, status_text, details_text)
+        table.add_row(label, "[bold green]● OK[/bold green]" if ok else "[bold red]● MISSING[/bold red]", version if ok else "not installed")
         if not ok:
             all_ok = False
 
-    # Rust runtime (optional)
     label, version, ok = _check_command("Runtime (Rust)", ["watchllm-cli", "--version"])
-    status_text = "[bold green]● OK[/bold green]" if ok else "[bold yellow]● SKIP[/bold yellow]"
-    details_text = version if ok else "not built"
-    table.add_row("Runtime (Rust)", status_text, details_text)
+    table.add_row("Runtime (Rust)", "[bold green]● OK[/bold green]" if ok else "[bold yellow]● SKIP[/bold yellow]", version if ok else "not built")
 
-    # Config file
     try:
         from watchllm_kernel.config import load_config
         config = load_config()
-        if config.config_path:
-            table.add_row("Config", "[bold green]● OK[/bold green]", str(config.config_path))
-        else:
-            table.add_row("Config", "[bold yellow]● SKIP[/bold yellow]", "no .watchllm.toml found")
+        table.add_row("Config", "[bold green]● OK[/bold green]" if config.config_path else "[bold yellow]● SKIP[/bold yellow]", str(config.config_path) if config.config_path else "no .watchllm.toml found")
     except ImportError:
         table.add_row("Config", "[bold red]● ERROR[/bold red]", "watchllm_kernel not found")
 
-    # klyd database
     klyd_db = Path.cwd() / ".klyd" / "memory.db"
-    if klyd_db.exists():
-        table.add_row("klyd Memory", "[bold green]● OK[/bold green]", ".klyd/memory.db")
-    else:
-        table.add_row("klyd Memory", "[bold yellow]● SKIP[/bold yellow]", "not initialised")
+    table.add_row("klyd Memory", "[bold green]● OK[/bold green]" if klyd_db.exists() else "[bold yellow]● SKIP[/bold yellow]", ".klyd/memory.db" if klyd_db.exists() else "not initialised")
 
-    console.print(Panel(table, title="[bold]Component Status[/bold]", border_style="cyan"))
-    console.print()
-
+    summary = Text("\n")
     if all_ok:
-        console.print("[bold green]✓  All core components installed and ready.[/bold green]")
+        summary.append("  ✓  All core components installed and ready.", style="bold green")
     else:
-        console.print("[bold red]✗  Some components are missing. See table above.[/bold red]")
+        summary.append("  ✗  Some components are missing. See above.", style="bold red")
+
+    from rich.console import Group as RenderGroup
+    _print_panel(RenderGroup(table, summary), subcommand="status", border_style="cyan" if all_ok else "red")
+
+    if not all_ok:
         sys.exit(1)
 
 
@@ -326,12 +295,7 @@ def status_cmd() -> None:
 @click.argument("file", required=False)
 @click.option("--stdin", is_flag=True, help="Read source from stdin instead of a file path.")
 @click.option("--language", default=None, help="Language identifier (e.g. javascript, typescript).")
-@click.option(
-    "--mode",
-    type=click.Choice(["enforce", "shadow"]),
-    default=None,
-    help="Evaluation mode. Overrides .watchllm.toml.",
-)
+@click.option("--mode", type=click.Choice(["enforce", "shadow"]), default=None, help="Evaluation mode. Overrides .watchllm.toml.")
 @click.option("--json", "output_json", is_flag=True, help="Output result as JSON.")
 @click.option("--config", "config_path", default=None, help="Path to .watchllm.toml config file.")
 @click.pass_context
@@ -349,18 +313,16 @@ def evaluate_cmd(
 
     if not stdin and not file:
         _print_error(
+            "evaluate",
             "Missing Argument",
-            "Either a [bold cyan]file path[/bold cyan] or the [bold cyan]--stdin[/bold cyan] flag is required.",
-            hint="Example: [bold cyan]watchllm evaluate src/agent.py[/bold cyan]",
+            "Provide a file path or use --stdin.",
+            hint="Example:  watchllm evaluate src/agent.py",
         )
         ctx.exit(2)
         return
 
     target_label = "<stdin>" if stdin else str(file)
-    console.print(f"[dim]Evaluating[/dim] [bold cyan]{target_label}[/bold cyan]  "
-                  f"[dim]mode:[/dim] [magenta]{mode or 'default'}[/magenta]\n")
 
-    # Build the argv list that the kernel CLI expects.
     argv = ["evaluate"]
     if stdin:
         argv.append("--stdin")
@@ -375,7 +337,6 @@ def evaluate_cmd(
     if config_path:
         argv.extend(["--config", config_path])
 
-    # Capture the kernel output so we can wrap it in Rich
     old_stdout = sys.stdout
     captured_io = io.StringIO()
     sys.stdout = captured_io
@@ -386,27 +347,36 @@ def evaluate_cmd(
 
     output = captured_io.getvalue()
 
+    if output_json and not sys.stdout.isatty():
+        print(output, end="")
+        ctx.exit(exit_code)
+        return
+
+    meta = Text()
+    meta.append("file: ", style="dim")
+    meta.append(target_label, style="cyan")
+    meta.append("   mode: ", style="dim")
+    meta.append(mode or "default", style="magenta")
+    meta.append("\n\n")
+
     if output_json:
-        # Syntax-highlight JSON if on a TTY, otherwise pass through for piping
-        if sys.stdout.isatty():
-            console.print(Syntax(output, "json", theme="monokai", word_wrap=True))
-        else:
-            print(output, end="")
+        from rich.console import Group as RenderGroup
+        body = RenderGroup(meta, Syntax(output, "json", theme="monokai", word_wrap=True))
     else:
-        if exit_code == 0:
-            console.print(Panel(
-                output.strip() or "[dim]No output[/dim]",
-                title="[bold green]  Evaluation Passed[/bold green]",
-                border_style="green",
-                expand=False,
-            ))
-        else:
-            console.print(Panel(
-                output.strip() or "[dim]No output[/dim]",
-                title="[bold red]  Evaluation Failed[/bold red]",
-                border_style="red",
-                expand=False,
-            ))
+        body_text = Text.from_markup(output.strip() or "[dim]No output[/dim]")
+        from rich.console import Group as RenderGroup
+        body = RenderGroup(meta, body_text)
+
+    border = "green" if exit_code == 0 else "red"
+    result_label = "✓  evaluate" if exit_code == 0 else "✗  evaluate"
+    console.print(Panel(
+        body,
+        title=_header_title(result_label),
+        title_align="left",
+        border_style=border,
+        box=rich_box.ROUNDED,
+        padding=(1, 2),
+    ))
 
     ctx.exit(exit_code)
 
@@ -419,19 +389,8 @@ def evaluate_cmd(
 @cli.command("spawn")
 @click.option("--role", default=None, help="Agent role to embed in the orchestrator token.")
 @click.option("--command", "agent_command", default=None, help='Command to launch, e.g. "aider".')
-@click.option(
-    "--permissions",
-    default="read-write",
-    show_default=True,
-    help="Permissions claim to encode in the token.",
-)
-@click.option(
-    "--expires-minutes",
-    default=60,
-    show_default=True,
-    type=click.IntRange(min=1),
-    help="Token lifetime in minutes.",
-)
+@click.option("--permissions", default="read-write", show_default=True, help="Permissions claim to encode in the token.")
+@click.option("--expires-minutes", default=60, show_default=True, type=click.IntRange(min=1), help="Token lifetime in minutes.")
 @click.pass_context
 def spawn_cmd(
     ctx: click.Context,
@@ -443,28 +402,50 @@ def spawn_cmd(
     """Spawn an agent process with WATCHLLM_AGENT_TOKEN injected."""
     errors = []
     if not role:
-        errors.append("  [bold yellow]--role[/bold yellow]     The identity role for this agent session  [dim](e.g. dev, reviewer)[/dim]")
+        errors.append(("--role", "Identity role for this agent session", "dev, reviewer, ci-bot"))
     if not agent_command:
-        errors.append("  [bold yellow]--command[/bold yellow]  The command to launch  [dim](e.g. aider, python agent.py)[/dim]")
+        errors.append(("--command", "Command to launch under governance", "aider, python agent.py"))
 
     if errors:
-        body = "[bold white]The following required options are missing:[/bold white]\n\n"
-        body += "\n".join(errors)
-        body += "\n\n[dim]Example:[/dim]\n  [bold cyan]watchllm spawn --role dev --command aider[/bold cyan]"
-        console.print(Panel(body, title="[bold red]  Missing Options[/bold red]", border_style="red", expand=False))
+        table = Table(show_header=True, header_style="bold red", box=rich_box.SIMPLE, padding=(0, 2))
+        table.add_column("Option", style="yellow", width=14)
+        table.add_column("Purpose")
+        table.add_column("Example", style="dim")
+        for flag, purpose, example in errors:
+            table.add_row(flag, purpose, example)
+
+        hint = Text("\nExample:  ", style="dim")
+        hint.append("watchllm spawn --role dev --command aider", style="bold cyan")
+
+        from rich.console import Group as RenderGroup
+        body = RenderGroup(
+            Text("The following required options are missing:\n", style="bold white"),
+            table,
+            hint,
+        )
+        console.print(Panel(
+            body,
+            title=_header_title("spawn"),
+            title_align="left",
+            border_style="red",
+            box=rich_box.ROUNDED,
+            padding=(1, 2),
+        ))
         ctx.exit(2)
         return
 
-    console.print(Panel(
-        f"[dim]Agent Command:[/dim]  [bold cyan]{agent_command}[/bold cyan]\n"
-        f"[dim]Identity Role:[/dim]  [bold magenta]{role}[/bold magenta]\n"
-        f"[dim]Permissions:  [/dim]  [green]{permissions}[/green]\n"
-        f"[dim]Token TTL:    [/dim]  [yellow]{expires_minutes} min[/yellow]",
-        title="[bold blue]  Session Gateway[/bold blue]",
-        border_style="blue",
-        expand=False,
-    ))
-    console.print()
+    # Show the session gateway panel
+    info = Text()
+    info.append("  Agent Command  ", style="dim")
+    info.append(f"{agent_command}\n", style="bold cyan")
+    info.append("  Identity Role  ", style="dim")
+    info.append(f"{role}\n", style="bold magenta")
+    info.append("  Permissions    ", style="dim")
+    info.append(f"{permissions}\n", style="green")
+    info.append("  Token TTL      ", style="dim")
+    info.append(f"{expires_minutes} min\n", style="yellow")
+
+    _print_panel(info, subcommand="spawn", border_style="blue")
 
     try:
         from orchestrator.spawner import AgentSpawner
@@ -476,14 +457,15 @@ def spawn_cmd(
         )
     except ImportError:
         _print_error(
+            "spawn",
             "Orchestrator Not Installed",
-            "The [bold cyan]watchllm-orchestrator[/bold cyan] package is not installed.",
-            hint="Run: [bold cyan]pip install -e orchestrator/[/bold cyan]",
+            "The watchllm-orchestrator package is not installed.",
+            hint="Run:  pip install -e orchestrator/",
         )
         ctx.exit(1)
         return
     except ValueError as exc:
-        _print_error("Spawn Error", str(exc))
+        _print_error("spawn", "Spawn Error", str(exc))
         ctx.exit(1)
         return
 
