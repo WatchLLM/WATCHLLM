@@ -39,11 +39,32 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 
-@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+WATCHLLM_ASCII_ART = """[bold cyan]░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+░  ░░░░  ░░░      ░░░        ░░░      ░░░  ░░░░  ░░  ░░░░░░░░  ░░░░░░░░  ░░░░  ░
+▒  ▒  ▒  ▒▒  ▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒   ▒▒   ▒
+▓        ▓▓  ▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓▓▓▓▓        ▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓▓        ▓
+█   ██   ██        █████  █████  ████  ██  ████  ██  ████████  ████████  █  █  █
+█  ████  ██  ████  █████  ██████      ███  ████  ██        ██        ██  ████  █
+████████████████████████████████████████████████████████████████████████████████[/bold cyan]"""
+
+
+WATCHLLM_FALLBACK_ART = """[bold cyan]
+W A T C H L L M
+Governance-aware orchestration for autonomous coding agents.
+[/bold cyan]"""
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
 @click.version_option(version=__version__, prog_name="watchllm")
-def cli() -> None:
+@click.pass_context
+def cli(ctx: click.Context) -> None:
     """WatchLLM — Governance-aware orchestration for autonomous coding agents."""
-    pass
+    if ctx.invoked_subcommand is None:
+        try:
+            console.print(WATCHLLM_ASCII_ART)
+        except UnicodeEncodeError:
+            console.print(WATCHLLM_FALLBACK_ART)
+        console.print()
+        click.echo(ctx.get_help())
 
 
 # ---------------------------------------------------------------------------
@@ -242,6 +263,9 @@ def evaluate_cmd(
     """
     from watchllm_kernel.cli import main as kernel_main
 
+    import io
+    from rich.syntax import Syntax
+
     # Build the argv list that the kernel CLI expects.
     argv = ["evaluate"]
 
@@ -261,9 +285,29 @@ def evaluate_cmd(
     if config_path:
         argv.extend(["--config", config_path])
 
-    # We do not wrap this in Rich because the kernel CLI formats its own output
-    # or prints raw JSON which must remain valid for stdout piping.
-    exit_code = kernel_main(argv)
+    # Capture the output of kernel_main
+    old_stdout = sys.stdout
+    captured = io.StringIO()
+    sys.stdout = captured
+    
+    try:
+        exit_code = kernel_main(argv)
+    finally:
+        sys.stdout = old_stdout
+        
+    output = captured.getvalue()
+    
+    if output_json:
+        if sys.stdout.isatty():
+            console.print(Syntax(output, "json", theme="monokai", word_wrap=True))
+        else:
+            print(output, end="")
+    else:
+        if exit_code == 0:
+            console.print(Panel(output.strip(), title="[bold green]Evaluation Passed[/bold green]", border_style="green", expand=False))
+        else:
+            console.print(Panel(output.strip(), title="[bold red]Evaluation Failed[/bold red]", border_style="red", expand=False))
+            
     ctx.exit(exit_code)
 
 
