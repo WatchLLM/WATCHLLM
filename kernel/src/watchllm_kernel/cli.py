@@ -33,17 +33,25 @@ def _to_jsonable(obj: Any) -> Any:
     return obj
 
 
-def build_default_rules(config: Optional[WatchLLMConfig] = None, role: Optional[str] = None):
+def build_default_rules(
+    config: Optional[WatchLLMConfig] = None,
+    role: Optional[str] = None,
+    language: Optional[str] = None,
+):
     """Return the default rule set for the kernel CLI.
 
     When *config* is provided, rule constructors receive the project-level
     overrides (forbidden modules, boundary map, etc.).  When ``None``,
     rules use their own built-in defaults — preserving existing behaviour.
-    
+
     When *role* is provided, the rule set is filtered based on the agent's
     role (e.g. read-only agents skip boundary rules).
 
-    The secret‑literal rule is optional; if the module is not available it is
+    When *language* is ``"python"``, the Python-specific forbidden module
+    list (``config.python_forbidden_modules``) is used instead of the JS/TS
+    default list.
+
+    The secret-literal rule is optional; if the module is not available it is
     silently skipped.
     """
     rules = []
@@ -57,9 +65,15 @@ def build_default_rules(config: Optional[WatchLLMConfig] = None, role: Optional[
         rules.append(SecretLiteralRule())
 
     if config is not None and not config.is_default:
+        # Select the correct forbidden-modules set based on language.
+        if language == "python":
+            forbidden_modules = config.python_forbidden_modules
+        else:
+            forbidden_modules = config.forbidden_modules
+
         rules.extend([
             ForbiddenImportRule(
-                forbidden_modules=config.forbidden_modules,
+                forbidden_modules=forbidden_modules,
                 forbidden_prefixes=config.forbidden_prefixes,
             )
         ])
@@ -69,9 +83,15 @@ def build_default_rules(config: Optional[WatchLLMConfig] = None, role: Optional[
                 AuthFlowRule(),
             ])
     else:
-        rules.extend([
-            ForbiddenImportRule()
-        ])
+        # No config file — use rule-level defaults.
+        # For Python, supply the Python-specific defaults explicitly.
+        if language == "python":
+            from watchllm_kernel.config import _DEFAULT_PYTHON_FORBIDDEN_MODULES
+            rules.extend([
+                ForbiddenImportRule(forbidden_modules=_DEFAULT_PYTHON_FORBIDDEN_MODULES)
+            ])
+        else:
+            rules.extend([ForbiddenImportRule()])
         if role != "read-only-agent":
             rules.extend([
                 BoundaryRule(),
@@ -203,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
     trace_id = get_trace_id()
 
     # --- evaluate ---
-    rules = build_default_rules(config, role=role)
+    rules = build_default_rules(config, role=role, language=language)
     result = evaluate_source(
         source,
         file_path=file_path,

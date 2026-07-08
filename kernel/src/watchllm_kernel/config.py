@@ -42,6 +42,13 @@ _DEFAULT_FORBIDDEN_MODULES: frozenset[str] = frozenset({
     "vm",
 })
 
+# Python-specific defaults: modules that enable system access / code exec in Python.
+_DEFAULT_PYTHON_FORBIDDEN_MODULES: frozenset[str] = frozenset({
+    "subprocess",
+    "pickle",
+    "marshal",
+})
+
 _DEFAULT_FORBIDDEN_PREFIXES: frozenset[str] = frozenset({
     "../",
     "../../",
@@ -82,6 +89,9 @@ class WatchLLMConfig:
     )
     boundary_map: dict[str, dict] = dataclasses.field(
         default_factory=lambda: dict(_DEFAULT_BOUNDARY_MAP)
+    )
+    python_forbidden_modules: frozenset[str] = dataclasses.field(
+        default_factory=lambda: _DEFAULT_PYTHON_FORBIDDEN_MODULES
     )
     config_path: Optional[str] = None
 
@@ -163,11 +173,21 @@ def _config_from_dict(data: dict[str, Any], config_path: str) -> WatchLLMConfig:
     if isinstance(raw_boundary, dict):
         boundary_map = _parse_boundary_map(raw_boundary)
 
+    # [kernel.python] section
+    python_section = data.get("kernel", {}).get("python", {})
+    python_forbidden_modules = _DEFAULT_PYTHON_FORBIDDEN_MODULES
+    raw_py_modules = python_section.get("forbidden_modules") if isinstance(python_section, dict) else None
+    if isinstance(raw_py_modules, list):
+        python_forbidden_modules = frozenset(
+            m for m in raw_py_modules if isinstance(m, str)
+        )
+
     return WatchLLMConfig(
         mode=mode,
         forbidden_modules=forbidden_modules,
         forbidden_prefixes=forbidden_prefixes,
         boundary_map=boundary_map,
+        python_forbidden_modules=python_forbidden_modules,
         config_path=config_path,
     )
 
@@ -272,13 +292,18 @@ DEFAULT_CONFIG_TEMPLATE = """\
 [kernel]
 mode = "enforce"   # "enforce" blocks saves; "shadow" logs only
 
-# Modules that agents are forbidden from importing.
+# JavaScript/TypeScript: modules that agents are forbidden from importing.
 # Default: ["child_process", "vm"]
 # forbidden_modules = ["child_process", "vm", "fs"]
 
 # Relative import prefixes to block (directory traversal).
 # Default: ["../", "../../", ...]
 # forbidden_prefixes = ["../"]
+
+# [kernel.python]
+# Python-specific forbidden imports (separate from JS/TS defaults).
+# Default: ["subprocess", "pickle", "marshal"]
+# forbidden_modules = ["subprocess", "pickle", "marshal", "ctypes"]
 
 # [kernel.boundary]
 # auth = { forbidden = ["db/internal"], allowed = ["db/public"] }

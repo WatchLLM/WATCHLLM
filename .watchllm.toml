@@ -1,3 +1,5 @@
-[kernel.boundary]
-mock_module = { forbidden = ["foo/bar"] }
-payments = { forbidden = ["stripe"] }
+# WatchLLM project configuration.
+# https://watchllm.dev/docs/config
+
+[kernel]
+mode = "enforce"   # "enforce" blocks saves; "shadow" logs only
