@@ -18,15 +18,9 @@ type StepDetailsPaneProps = {
   step: StepDetails | null;
 };
 
-function formatValue(value: unknown) {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  if (typeof value === 'string') {
-    return value;
-  }
-
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
   try {
     return JSON.stringify(value, null, 2) ?? String(value);
   } catch {
@@ -43,26 +37,36 @@ function getDiffRows(before: unknown, after: unknown) {
   for (let index = 0; index < maxLength; index += 1) {
     const beforeLine = beforeLines[index] ?? '';
     const afterLine = afterLines[index] ?? '';
-
     rows.push({
       id: index,
       before: beforeLine,
       after: afterLine,
       changed: beforeLine !== afterLine,
+      added: beforeLine === '' && afterLine !== '',
     });
   }
 
   return rows;
 }
 
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="details-section">
+      <span className="details-section-title">{label}</span>
+      <pre>{value || '—'}</pre>
+    </div>
+  );
+}
+
 function StepDetailsPane({ step }: StepDetailsPaneProps) {
   if (!step) {
     return (
       <div className="details-pane">
-        <h2>Step details</h2>
-        <p className="details-placeholder">
+        <span className="details-pane-heading">Step Details</span>
+        <div className="details-placeholder">
+          <span className="details-placeholder-icon">◉</span>
           Select a node in the graph to inspect tool arguments and state changes.
-        </p>
+        </div>
       </div>
     );
   }
@@ -70,67 +74,62 @@ function StepDetailsPane({ step }: StepDetailsPaneProps) {
   const diffRows = getDiffRows(step.stateBefore, step.stateAfter);
 
   return (
-    <div className="details-pane">
-      <h2>
+    <div className="details-pane fade-in">
+      <span className="details-pane-heading">
         #{step.sequence} {step.label || step.toolName || step.type}
-      </h2>
+      </span>
 
       <div className="details-grid">
-        <div className="details-section">
-          <span className="details-section-title">Step ID</span>
-          <pre>{step.id}</pre>
-        </div>
-
-        <div className="details-section">
-          <span className="details-section-title">Type</span>
-          <pre>{step.type}</pre>
-        </div>
-
-        {step.toolName && (
-          <div className="details-section">
-            <span className="details-section-title">Tool</span>
-            <pre>{step.toolName}</pre>
-          </div>
-        )}
-
-        <div className="details-section">
-          <span className="details-section-title">Created</span>
-          <pre>{new Date(step.createdAt).toLocaleString()}</pre>
-        </div>
+        <Field label="Step ID" value={step.id} />
+        <Field label="Type" value={step.type} />
+        {step.toolName && <Field label="Tool" value={step.toolName} />}
+        <Field label="Timestamp" value={new Date(step.createdAt).toLocaleString()} />
 
         <section className="details-section">
-          <h3 className="details-section-title">Tool arguments</h3>
+          <h3 className="details-section-title">Tool Arguments</h3>
           <pre>{formatValue(step.input) || 'No input captured.'}</pre>
         </section>
 
         <section className="details-section">
-          <h3 className="details-section-title">Output / logs</h3>
+          <h3 className="details-section-title">Output / Logs</h3>
           <pre>{formatValue(step.output) || 'No output captured.'}</pre>
         </section>
 
-        <section className="details-section">
-          <h3 className="details-section-title">Before / After state diff</h3>
-
-          <div className="diff-grid">
-            <div className="diff-header">Before</div>
-            <div className="diff-header">After</div>
-
-            {diffRows.map((row) => (
-              <Fragment key={row.id}>
-                <pre
-                  className={row.changed ? 'diff-line diff-line-changed' : 'diff-line'}
-                >
-                  {row.before || ' '}
-                </pre>
-                <pre
-                  className={row.changed ? 'diff-line diff-line-changed' : 'diff-line'}
-                >
-                  {row.after || ' '}
-                </pre>
-              </Fragment>
-            ))}
-          </div>
-        </section>
+        {(step.stateBefore || step.stateAfter) && (
+          <section className="details-section">
+            <h3 className="details-section-title">Before / After Diff</h3>
+            <div className="diff-grid">
+              <div className="diff-header">Before</div>
+              <div className="diff-header">After</div>
+              {diffRows.map((row) => (
+                <Fragment key={row.id}>
+                  <pre
+                    className={
+                      row.changed
+                        ? row.added
+                          ? 'diff-line diff-line-added'
+                          : 'diff-line diff-line-changed'
+                        : 'diff-line'
+                    }
+                  >
+                    {row.before || ' '}
+                  </pre>
+                  <pre
+                    className={
+                      row.changed
+                        ? row.added
+                          ? 'diff-line diff-line-added'
+                          : 'diff-line diff-line-changed'
+                        : 'diff-line'
+                    }
+                  >
+                    {row.after || ' '}
+                  </pre>
+                </Fragment>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

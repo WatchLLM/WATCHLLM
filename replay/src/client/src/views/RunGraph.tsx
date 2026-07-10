@@ -48,6 +48,28 @@ type GraphResponse = {
   edges: GraphEdge[];
 };
 
+/** Return a light card style for each node based on its state */
+function nodeStyle(isActive: boolean, isSelected: boolean): React.CSSProperties {
+  if (isActive) {
+    return {
+      border: '2px solid hsl(165, 100%, 55%)',
+      background: 'hsl(165, 100%, 97%)',
+      boxShadow: '0 0 0 4px hsla(165, 100%, 55%, 0.25)',
+    };
+  }
+  if (isSelected) {
+    return {
+      border: '2px solid hsl(210, 100%, 66%)',
+      background: 'hsl(210, 100%, 97%)',
+      boxShadow: '0 0 0 4px hsla(210, 100%, 66%, 0.2)',
+    };
+  }
+  return {
+    border: '1px solid hsl(222, 30%, 75%)',
+    background: 'hsl(0, 0%, 100%)',
+  };
+}
+
 function RunGraph() {
   const { runId } = useParams<{ runId: string }>();
   const [graph, setGraph] = useState<GraphResponse | null>(null);
@@ -93,12 +115,8 @@ function RunGraph() {
 
   const orderedSteps = useMemo(() => {
     if (!graph) return [];
-
     return [...graph.nodes].sort((a, b) => {
-      if (a.sequence !== b.sequence) {
-        return a.sequence - b.sequence;
-      }
-
+      if (a.sequence !== b.sequence) return a.sequence - b.sequence;
       return a.id.localeCompare(b.id);
     });
   }, [graph]);
@@ -107,62 +125,44 @@ function RunGraph() {
 
   const selectedStep = useMemo(() => {
     if (!selectedStepId) return null;
-
     return orderedSteps.find((step) => step.id === selectedStepId) ?? null;
   }, [orderedSteps, selectedStepId]);
 
   useEffect(() => {
-    if (!isPlaying || orderedSteps.length === 0) {
-      return;
-    }
+    if (!isPlaying || orderedSteps.length === 0) return;
 
     const timer = window.setInterval(() => {
-      setCurrentStepIndex((previousIndex) => {
-        if (previousIndex >= orderedSteps.length - 1) {
+      setCurrentStepIndex((prev) => {
+        if (prev >= orderedSteps.length - 1) {
           setIsPlaying(false);
-          return previousIndex;
+          return prev;
         }
-
-        const nextIndex = previousIndex + 1;
-
-        if (nextIndex >= orderedSteps.length - 1) {
-          setIsPlaying(false);
-        }
-
-        return nextIndex;
+        const next = prev + 1;
+        if (next >= orderedSteps.length - 1) setIsPlaying(false);
+        return next;
       });
     }, 1000);
 
-    return () => {
-      window.clearInterval(timer);
-    };
+    return () => window.clearInterval(timer);
   }, [isPlaying, orderedSteps.length]);
 
   function handlePlay() {
-    if (orderedSteps.length === 0) {
-      return;
-    }
-
-    if (currentStepIndex >= orderedSteps.length - 1) {
-      setCurrentStepIndex(0);
-    }
-
+    if (orderedSteps.length === 0) return;
+    if (currentStepIndex >= orderedSteps.length - 1) setCurrentStepIndex(0);
     setIsPlaying(true);
   }
 
-  function handlePause() {
-    setIsPlaying(false);
-  }
+  function handlePause() { setIsPlaying(false); }
 
   function handleStepBack() {
     setIsPlaying(false);
-    setCurrentStepIndex((previousIndex) => Math.max(previousIndex - 1, 0));
+    setCurrentStepIndex((prev) => Math.max(prev - 1, 0));
   }
 
   function handleStepForward() {
     setIsPlaying(false);
-    setCurrentStepIndex((previousIndex) =>
-      Math.min(previousIndex + 1, Math.max(orderedSteps.length - 1, 0))
+    setCurrentStepIndex((prev) =>
+      Math.min(prev + 1, Math.max(orderedSteps.length - 1, 0))
     );
   }
 
@@ -173,42 +173,36 @@ function RunGraph() {
   const flowNodes: Node[] = useMemo(() => {
     if (!graph) return [];
 
-    return orderedSteps.map((step, index) => ({
-      id: step.id,
-      position: {
-        x: (index % 4) * 280,
-        y: Math.floor(index / 4) * 170,
-      },
-      className: [
-        step.id === activeStepId ? 'active-flow-node' : null,
-        step.id === selectedStepId ? 'selected-flow-node' : null,
-      ]
-        .filter(Boolean)
-        .join(' ') || undefined,
-      style:
-        step.id === activeStepId
-          ? {
-              border: '2px solid #f2cc60',
-              boxShadow: '0 0 0 4px rgba(242, 204, 96, 0.24)',
-            }
-          : step.id === selectedStepId
-            ? {
-                border: '2px solid #58a6ff',
-                boxShadow: '0 0 0 4px rgba(88, 166, 255, 0.2)',
-              }
-            : undefined,
-      data: {
-        label: (
-          <div className="flow-node-label">
-            <strong>
-              #{step.sequence} {step.label || step.toolName || step.type}
-            </strong>
-            <span>{step.type}</span>
-            {step.toolName ? <small>{step.toolName}</small> : null}
-          </div>
-        ),
-      },
-    }));
+    return orderedSteps.map((step, index) => {
+      const isActive   = step.id === activeStepId;
+      const isSelected = step.id === selectedStepId;
+
+      return {
+        id: step.id,
+        position: {
+          x: (index % 4) * 260,
+          y: Math.floor(index / 4) * 160,
+        },
+        className: [
+          isActive   ? 'active-flow-node'   : null,
+          isSelected ? 'selected-flow-node' : null,
+        ]
+          .filter(Boolean)
+          .join(' ') || undefined,
+        style: nodeStyle(isActive, isSelected),
+        data: {
+          label: (
+            <div className="flow-node-label">
+              <strong>
+                #{step.sequence} {step.label || step.toolName || step.type}
+              </strong>
+              <span>{step.type}</span>
+              {step.toolName ? <small>{step.toolName}</small> : null}
+            </div>
+          ),
+        },
+      };
+    });
   }, [orderedSteps, activeStepId, selectedStepId]);
 
   const flowEdges: Edge[] = useMemo(() => {
@@ -219,18 +213,26 @@ function RunGraph() {
       source: edge.sourceStepId,
       target: edge.targetStepId,
       label: edge.relationship,
+      animated: false,
       markerEnd: {
         type: MarkerType.ArrowClosed,
+        color: 'hsl(210, 100%, 66%)',
       },
+      style: { stroke: 'hsl(210, 100%, 66%)', strokeWidth: 1.5 },
     }));
   }, [graph]);
 
   if (loading) {
-    return <div className="state-message">Loading graph…</div>;
+    return (
+      <div className="state-message">
+        <div className="spinner" />
+        Loading graph…
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error-message">Error: {error}</div>;
+    return <div className="error-message">⚠ {error}</div>;
   }
 
   if (!graph) {
@@ -239,23 +241,26 @@ function RunGraph() {
 
   if (graph.nodes.length === 0) {
     return (
-      <div className="graph-page">
+      <div className="graph-page fade-up">
         <header className="graph-header">
-          <Link to="/runs">← Back to runs</Link>
+          <Link to="/runs" className="graph-header-back">← Back to runs</Link>
           <h1>{graph.run.name ?? 'Untitled run'}</h1>
         </header>
-        <div className="state-message">This run has no steps yet.</div>
+        <div className="state-message">
+          <div className="state-message-icon">◈</div>
+          This run has no steps yet.
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="graph-page">
+    <div className="graph-page fade-up">
       <header className="graph-header">
-        <Link to="/runs">← Back to runs</Link>
+        <Link to="/runs" className="graph-header-back">← Back to runs</Link>
         <h1>{graph.run.name ?? 'Untitled run'}</h1>
         <p className="run-meta">
-          <strong>Run ID:</strong> {graph.run.id}
+          <strong>Run ID</strong> {graph.run.id}
         </p>
       </header>
 
@@ -271,10 +276,25 @@ function RunGraph() {
 
       <div className="graph-details-layout">
         <div className="graph-shell">
-          <ReactFlow nodes={flowNodes} edges={flowEdges} onNodeClick={handleNodeClick} fitView>
-            <MiniMap />
+          <ReactFlow
+            nodes={flowNodes}
+            edges={flowEdges}
+            onNodeClick={handleNodeClick}
+            fitView
+            proOptions={{ hideAttribution: true }}
+          >
+            <MiniMap
+              nodeStrokeWidth={2}
+              nodeColor={(node) =>
+                node.className?.includes('active-flow-node')
+                  ? 'hsl(165, 100%, 55%)'
+                  : node.className?.includes('selected-flow-node')
+                    ? 'hsl(210, 100%, 66%)'
+                    : 'hsl(222, 30%, 30%)'
+              }
+            />
             <Controls />
-            <Background />
+            <Background gap={20} color="hsl(222, 30%, 16%)" />
           </ReactFlow>
         </div>
 

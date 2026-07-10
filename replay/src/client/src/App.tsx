@@ -7,22 +7,39 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <h2 className="sidebar-title">WatchLLM Replay</h2>
+        <div className="sidebar-brand">
+          <span className="sidebar-eyebrow">WatchLLM</span>
+          <h2 className="sidebar-title">Re<span>play</span></h2>
+        </div>
+
         <nav>
           <ul className="sidebar-nav">
             <li>
-              <NavLink to="/runs" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              <NavLink
+                to="/runs"
+                className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+              >
+                <span className="nav-icon">◈</span>
                 Runs
               </NavLink>
             </li>
             <li>
-              <NavLink to="/violations" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              <NavLink
+                to="/violations"
+                className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+              >
+                <span className="nav-icon">⚡</span>
                 Violations
               </NavLink>
             </li>
           </ul>
         </nav>
+
+        <div className="sidebar-footer">
+          v0.1.0 · forensics engine
+        </div>
       </aside>
+
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Navigate to="/runs" replace />} />

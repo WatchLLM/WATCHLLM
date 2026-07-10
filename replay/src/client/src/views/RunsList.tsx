@@ -43,33 +43,57 @@ function RunsList() {
   }, []);
 
   if (loading) {
-    return <div className="state-message">Loading runs…</div>;
+    return (
+      <div className="state-message">
+        <div className="spinner" />
+        Loading runs…
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error-message">Error: {error}</div>;
+    return <div className="error-message">⚠ {error}</div>;
   }
 
   if (runs.length === 0) {
-    return <div className="state-message">No runs found. Ingest a run to see it here.</div>;
+    return (
+      <div className="state-message fade-up">
+        <div className="state-message-icon">◈</div>
+        No runs found. Ingest a run to see it here.
+      </div>
+    );
   }
 
   return (
-    <div>
-      <h1 className="page-header">Runs</h1>
+    <div className="fade-up">
+      <h1 className="page-header">Agent Runs</h1>
+      <p className="page-subtitle">Select a run to replay its execution graph.</p>
       <div className="runs-grid">
-        {runs.map((run) => (
-          <Link key={run.id} className="run-card run-card-link" to={`/runs/${run.id}`}>
-            <h3>{run.name ?? 'Untitled run'}</h3>
-            <p className="run-meta">
-              <strong>ID:</strong> {run.id}
-            </p>
-            <p className="run-meta">
-              <strong>Created:</strong> {new Date(run.createdAt).toLocaleString()}
-            </p>
-            <div className="metadata-preview">
-              <strong>Metadata</strong>
-              <pre>{JSON.stringify(run.metadata, null, 2)}</pre>
+        {runs.map((run, i) => (
+          <Link
+            key={run.id}
+            className="run-card-link"
+            to={`/runs/${run.id}`}
+            style={{ animationDelay: `${i * 0.05}s` }}
+          >
+            <div className="run-card">
+              <div className="run-card-icon">◈</div>
+              <h3>{run.name ?? 'Untitled run'}</h3>
+              <p className="run-meta">
+                <strong>ID</strong> {run.id}
+              </p>
+              <p className="run-meta">
+                <strong>Created</strong>{' '}
+                {new Date(run.createdAt).toLocaleString()}
+              </p>
+              {run.metadata && (
+                <>
+                  <div className="run-card-divider" />
+                  <div className="metadata-preview">
+                    <pre>{JSON.stringify(run.metadata, null, 2)}</pre>
+                  </div>
+                </>
+              )}
             </div>
           </Link>
         ))}
