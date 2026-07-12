@@ -23,6 +23,24 @@ The `docs` repository is the central point of truth for WatchLLM's system design
 
 It defines interfaces and guidelines to prevent architectural entropy, uncontrolled abstraction, and agent-induced system incoherence.
 
+## Quick Start
+
+Install the entire WatchLLM stack with a single command:
+
+```bash
+pip install watchllm
+```
+
+This installs the kernel, klyd, orchestrator, and the unified `watchllm` CLI. Then:
+
+```bash
+watchllm --help
+watchllm evaluate <file>
+watchllm spawn --role read-only-agent
+```
+
+See [`watchllm` on PyPI](https://pypi.org/project/watchllm/) for more.
+
 ## Directory Structure
 
 This repository is structured into distinct documentation namespaces:

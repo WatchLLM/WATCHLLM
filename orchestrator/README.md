@@ -31,6 +31,28 @@ The `orchestrator` repository is the **Phase 7** orchestration layer of the Watc
 - **WatchLLM Orchestrator:** Configures the identity and policy bounds before the agent starts.
 - **WatchLLM Kernel (Enforcer):** Reads the identity context provided by Orchestrator and enforces it during file-write operations.
 
+## Installation
+
+The orchestrator is installed automatically as part of the unified WatchLLM CLI:
+
+```bash
+pip install watchllm
+```
+
+That single command installs the orchestrator, kernel, klyd, and the `watchllm` CLI entry point.
+
+> **For contributors only:** To install the orchestrator in editable mode for local development:
+> ```bash
+> pip install -e .
+> ```
+
+## Usage
+
+```bash
+watchllm spawn --role <role>
+watchllm --help
+```
+
 ## Links
 
 - [WatchLLM Organization](https://github.com/WatchLLM)

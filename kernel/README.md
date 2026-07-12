@@ -18,16 +18,28 @@ Task 14 complete — core model layer, parser abstraction, fixture corpus, rule 
 
 ## Installation
 
+The kernel is installed automatically as part of the unified WatchLLM CLI:
+
 ```bash
-python -m pip install -e .
+pip install watchllm
 ```
+
+That single command installs the kernel, klyd, orchestrator, and the `watchllm` CLI entry point.
+
+> **For contributors only:** To install the kernel package in editable mode for local development:
+> ```bash
+> pip install -e .
+> ```
 
 ## Usage
 
 ```bash
-watchllm-kernel --help
-python -m watchllm_kernel --help
+watchllm --help
+watchllm evaluate <file>
+watchllm spawn --role <role>
 ```
+
+The kernel's evaluation logic is exposed via the top-level `watchllm` command. You do not need to invoke `watchllm-kernel` directly.
 
 ## Fixture corpus
 

@@ -41,16 +41,26 @@ Large Language Models (LLMs) tend to lose architectural context and make regress
 
 ## Installation
 
+klyd is installed automatically as part of the unified WatchLLM CLI:
+
 ```bash
-pip install -e .
+pip install watchllm
 ```
+
+That single command installs klyd, the kernel, orchestrator, and the `watchllm` CLI entry point.
+
+> **For contributors only:** To install klyd in editable mode for local development:
+> ```bash
+> pip install -e .
+> ```
 
 ## Usage
 
 ```bash
-klyd --help
-python -m klyd --help
+watchllm --help
 ```
+
+klyd's memory and context features are exposed via the unified `watchllm` command. You do not need to invoke `klyd` directly.
 
 ## Links
 
