@@ -76,9 +76,11 @@ def infer_source_module(file_path: str | None) -> str:
     if "auth" in segments:
         return "auth"
 
-    # Check basename for auth_ or auth- prefix
+    # Check basename for auth prefix or exact match
     basename = segments[-1] if segments else ""
     if basename.startswith("auth_") or basename.startswith("auth-"):
+        return "auth"
+    if basename.rsplit(".", 1)[0] == "auth":
         return "auth"
 
     return "unknown"
@@ -107,6 +109,8 @@ def classify_import_target(import_path: str) -> tuple[str | None, str | None]:
         "../../db/internal",
         "../../../db/internal",
         "@app/db/internal",
+        "@internal/db",
+        "@internal/db/",
     ):
         if _matches_path_prefix(normalised, prefix):
             return ("db", "internal")

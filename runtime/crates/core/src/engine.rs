@@ -19,7 +19,7 @@ pub fn evaluate_source(
 ) -> KernelExecutionResult {
     match evaluate_all_rules(source, language) {
         Ok(rule_results) => build_result(rule_results, file_path, language, mode),
-        Err(message) => error_result(message, file_path, language),
+        Err(message) => error_result(message, file_path, &language_name(&language)),
     }
 }
 

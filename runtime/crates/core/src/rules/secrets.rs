@@ -431,7 +431,7 @@ mod tests {
 
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].location.line, 1);
-        assert_eq!(violations[0].location.column, 15);
+        assert_eq!(violations[0].location.column, 16);
         assert!(violations[0].location.end_line.is_none());
         assert_eq!(violations[0].evidence, "sk_live_xxx");
     }

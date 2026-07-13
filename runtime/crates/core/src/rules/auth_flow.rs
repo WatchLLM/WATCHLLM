@@ -217,8 +217,11 @@ fn reconstruct_member_expression(node: Node, source: &str) -> String {
 }
 
 fn is_db_call(callee: &str) -> bool {
-    let db_patterns = ["db.query", "db.execute", "db.run", "db.get", "db.all"];
-    db_patterns.iter().any(|p| *p == callee)
+    if !callee.starts_with("db.") {
+        return false;
+    }
+    let protected_methods = ["create", "insert", "update", "delete", "remove", "query", "execute", "prepare"];
+    callee.split('.').any(|seg| protected_methods.contains(&seg))
 }
 
 fn is_auth_call(callee: &str) -> bool {

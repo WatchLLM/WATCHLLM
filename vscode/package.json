@@ -49,7 +49,10 @@
           ]
         },
         "watchllm.rustCliPath": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null,
           "markdownDescription": "Absolute path to the `watchllm-cli` Rust binary (e.g. `d:/watchllm/runtime/target/release/watchllm-cli.exe`). When set and the binary exists on disk, the extension uses the Rust runtime instead of the Python kernel subprocess for lower latency. Leave `null` to use the Python kernel (default)."
         }
@@ -66,10 +69,10 @@
     "test": "npm run compile && node --test out/test/kernelExecutor.test.js out/test/saveHook.test.js out/test/diagnostics.test.js"
   },
   "devDependencies": {
-    "@types/node": "^18.11.18",
-    "@types/vscode": "^1.85.0",
+    "@types/node": "^18.19.130",
+    "@types/vscode": "^1.125.0",
     "@vscode/vsce": "^2.22.0",
     "esbuild": "^0.19.11",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   }
 }

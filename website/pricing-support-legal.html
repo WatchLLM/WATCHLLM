@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchLLM — Pricing / Support / Legal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg:           #000000;
+        --fg:           #e8e8e8;
+        --fg-dim:       #666666;
+        --fg-dimmer:    #3a3a3a;
+        --accent:       #ccff00;
+        --accent-dim:   rgba(204, 255, 0, 0.12);
+        --red:          #ff2222;
+        --red-dim:      rgba(255, 34, 34, 0.12);
+        --border:       #2a2a2a;
+        --card-bg:      #080808;
+        --font-heading: 'Space Grotesk', sans-serif;
+        --font-mono:    'JetBrains Mono', monospace;
+        --page-max: 1180px;
+        --spine: max(1.25rem, calc((100vw - var(--page-max)) / 2));
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: var(--bg);
+        background-image:
+          linear-gradient(to right, rgba(255,255,255,0.018) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,0.018) 1px, transparent 1px);
+        background-size: 56px 56px;
+        color: var(--fg);
+        font-family: var(--font-mono);
+        line-height: 1.6;
+        overflow-x: hidden;
+        cursor: crosshair;
+      }
+
+      body::after {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0; left: 0; bottom: 0; right: 0;
+        background:
+          linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%),
+          linear-gradient(to right, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+        background-size: 100% 4px, 4px 100%;
+        opacity: 0.15;
+        z-index: 9999;
+        pointer-events: none;
+      }
+
+      ::selection { background: var(--fg); color: var(--bg); }
+      a { color: var(--fg); text-decoration: none; cursor: crosshair; }
+      a:hover { color: var(--accent); }
+
+      .brutal-text {
+        font-family: var(--font-heading);
+        text-transform: uppercase;
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+      }
+
+      .highlight { color: var(--accent); }
+      .fg-dim { color: var(--fg-dim); }
+      .accent-color { color: var(--accent); margin-right: 0.5rem; }
+
+      .section {
+        padding: 10rem 2rem;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        position: relative;
+      }
+
+      .section-container {
+        max-width: var(--page-max);
+        margin-left: var(--spine);
+        margin-right: auto;
+      }
+
+      .section-label {
+        display: inline-block;
+        font-size: 0.7rem;
+        color: var(--fg-dimmer);
+        letter-spacing: 0.2em;
+        margin-bottom: 0.5rem;
+        font-family: var(--font-mono);
+      }
+
+      .section-title {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        margin-bottom: 2rem;
+        color: var(--fg);
+        max-width: 980px;
+        font-family: var(--font-heading);
+        text-transform: uppercase;
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+      }
+
+      /* ==============================
+         PRICING SECTION
+         ============================== */
+      .section--pricing {
+        background: radial-gradient(ellipse at 50% 0%, rgba(204,255,0,0.04) 0%, transparent 60%);
+        overflow: hidden;
+      }
+
+      .pricing-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-18deg);
+        font-family: var(--font-heading);
+        font-size: clamp(4rem, 16vw, 16rem);
+        font-weight: 900;
+        color: rgba(204, 255, 0, 0.035);
+        white-space: nowrap;
+        letter-spacing: -0.05em;
+        pointer-events: none;
+        z-index: 0;
+        text-transform: uppercase;
+        user-select: none;
+      }
+
+      .pricing-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0;
+        position: relative;
+        z-index: 1;
+        border: 1px solid var(--border);
+      }
+
+      .pricing-tier {
+        padding: 3rem 2.5rem;
+        background: rgba(8,8,8,0.92);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+        transition: background 0.15s;
+      }
+
+      .pricing-tier:last-child { border-right: none; }
+
+      .pricing-tier:hover {
+        background: rgba(12,12,12,0.96);
+      }
+
+      .pricing-tier--og {
+        background: rgba(204, 255, 0, 0.025);
+      }
+
+      .pricing-tier--og:hover {
+        background: rgba(204, 255, 0, 0.05);
+      }
+
+      .pricing-tier--enterprise {
+        background: rgba(255, 34, 34, 0.02);
+      }
+
+      .pricing-tier--enterprise:hover {
+        background: rgba(255, 34, 34, 0.04);
+      }
+
+      .tier-label {
+        font-family: var(--font-heading);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        color: var(--fg-dim);
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+      }
+
+      .pricing-tier--og .tier-label { color: var(--accent); }
+      .pricing-tier--enterprise .tier-label { color: var(--red); }
+
+      .tier-name {
+        font-family: var(--font-heading);
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+        margin-bottom: 1rem;
+        color: var(--fg);
+      }
+
+      .pricing-tier--og .tier-name {
+        color: var(--accent);
+      }
+
+      .tier-price {
+        font-family: var(--font-heading);
+        font-size: clamp(3rem, 7vw, 5.5rem);
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        line-height: 0.85;
+        margin-bottom: 0.5rem;
+        color: var(--fg);
+      }
+
+      .tier-price-sub {
+        font-size: 0.65rem;
+        color: var(--fg-dimmer);
+        letter-spacing: 0.1em;
+        margin-bottom: 2.5rem;
+        text-transform: uppercase;
+      }
+
+      .tier-cta {
+        display: inline-block;
+        border: 1px solid var(--fg-dim);
+        padding: 0.75rem 1.5rem;
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: crosshair;
+        transition: all 0.1s;
+        margin-bottom: 2.5rem;
+        width: 100%;
+        text-align: center;
+      }
+
+      .tier-cta:hover {
+        background: var(--fg);
+        border-color: var(--fg);
+        color: var(--bg);
+      }
+
+      .pricing-tier--og .tier-cta {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .pricing-tier--og .tier-cta:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+
+      .pricing-tier--enterprise .tier-cta {
+        border-color: var(--red);
+        color: var(--red);
+      }
+
+      .pricing-tier--enterprise .tier-cta:hover {
+        background: var(--red);
+        color: var(--bg);
+      }
+
+      .tier-features {
+        list-style: none;
+        width: 100%;
+      }
+
+      .tier-features li {
+        font-size: 0.8rem;
+        color: var(--fg-dim);
+        padding: 0.5rem 0;
+        padding-left: 1.2rem;
+        position: relative;
+        line-height: 1.5;
+        border-top: 1px solid rgba(255,255,255,0.04);
+      }
+
+      .tier-features li:first-child {
+        border-top: none;
+      }
+
+      .tier-features li::before {
+        content: '—';
+        position: absolute;
+        left: 0;
+        color: var(--fg-dimmer);
+      }
+
+      .pricing-tier--og .tier-features li::before {
+        color: var(--accent);
+      }
+
+      .pricing-tier--enterprise .tier-features li::before {
+        color: var(--red);
+      }
+
+      .tier-features li strong {
+        color: var(--fg);
+        font-weight: 700;
+      }
+
+      .tier-features .dont {
+        color: var(--red);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .pricing-footnote {
+        margin-top: 3rem;
+        font-size: 0.65rem;
+        color: var(--fg-dimmer);
+        letter-spacing: 0.05em;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ==============================
+         SUPPORT SECTION
+         ============================== */
+      .section--support {
+        background: radial-gradient(ellipse at 50% 50%, rgba(255,34,34,0.03) 0%, transparent 70%);
+      }
+
+      .support-card {
+        border: 1px solid var(--red);
+        background: rgba(8,8,8,0.92);
+        max-width: 680px;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .support-error-header {
+        background: var(--red);
+        color: #000;
+        padding: 0.6rem 1.5rem;
+        font-family: var(--font-heading);
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .support-error-code {
+        font-size: 1.1rem;
+        font-weight: 900;
+      }
+
+      .support-error-msg {
+        opacity: 0.8;
+        font-size: 0.75rem;
+      }
+
+      .support-body {
+        padding: 3rem 2.5rem;
+      }
+
+      .support-title {
+        font-family: var(--font-heading);
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+        margin-bottom: 2rem;
+        color: var(--fg);
+      }
+
+      .support-steps {
+        list-style: none;
+        counter-reset: support-step;
+        margin-bottom: 2rem;
+      }
+
+      .support-steps li {
+        counter-increment: support-step;
+        font-size: 1rem;
+        color: var(--fg);
+        padding: 1rem 0;
+        padding-left: 3rem;
+        position: relative;
+        line-height: 1.5;
+        border-top: 1px solid rgba(255,255,255,0.06);
+      }
+
+      .support-steps li:first-child {
+        border-top: none;
+      }
+
+      .support-steps li::before {
+        content: counter(support-step, decimal-leading-zero);
+        position: absolute;
+        left: 0;
+        top: 1rem;
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--red);
+        letter-spacing: -0.05em;
+      }
+
+      .support-closer {
+        font-family: var(--font-heading);
+        font-size: clamp(1.25rem, 3vw, 1.75rem);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: -0.03em;
+        color: var(--accent);
+        border-top: 1px solid var(--border);
+        padding-top: 2rem;
+        margin-top: 1rem;
+        line-height: 1.2;
+      }
+
+      /* ==============================
+         TERMS OF DISSERVICE
+         ============================== */
+      .section--legal {
+        background: #030303;
+        padding: 6rem 2rem 4rem;
+      }
+
+      .legal-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .legal-title {
+        font-family: var(--font-heading);
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--fg-dimmer);
+        margin-bottom: 2rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        padding-bottom: 1rem;
+      }
+
+      .legal-list {
+        list-style: none;
+      }
+
+      .legal-list li {
+        font-size: 0.6rem;
+        color: #444;
+        line-height: 1.7;
+        padding: 0.6rem 0;
+        padding-left: 1rem;
+        position: relative;
+        letter-spacing: 0.02em;
+      }
+
+      .legal-list li::before {
+        content: '·';
+        position: absolute;
+        left: 0;
+        color: #333;
+      }
+
+      .legal-list li strong {
+        color: #555;
+        font-weight: 700;
+      }
+
+      .legal-list li em {
+        color: #3a3a3a;
+        font-style: italic;
+      }
+
+      .legal-closer {
+        margin-top: 2rem;
+        font-size: 0.55rem;
+        color: #2a2a2a;
+        text-align: center;
+        letter-spacing: 0.1em;
+        font-family: var(--font-mono);
+        border-top: 1px solid rgba(255,255,255,0.03);
+        padding-top: 1.5rem;
+      }
+
+      /* ==============================
+         RESPONSIVE
+         ============================== */
+      @media (max-width: 768px) {
+        .section { padding: 4rem 1rem; }
+        .section-container { margin-left: 0; margin-right: 0; }
+        .pricing-grid { grid-template-columns: 1fr; }
+        .pricing-tier { border-right: none; border-bottom: 1px solid var(--border); }
+        .pricing-tier:last-child { border-bottom: none; }
+        .support-card { max-width: 100%; }
+        .legal-list li { font-size: 0.65rem; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- ===== PRICING ===== -->
+    <section id="pricing" class="section section--pricing">
+      <div class="pricing-watermark">I'M NOT HERE TO TAKE YOUR MONEY</div>
+
+      <div class="section-container">
+        <span class="section-label">06</span>
+        <h2 class="section-title brutal-text">
+          PRICING.<br>
+          <span class="highlight">OR THE LACK THEREOF.</span>
+        </h2>
+
+        <p style="font-size: 0.9rem; color: var(--fg-dim); max-width: 680px; margin-bottom: 4rem; line-height: 1.7;">
+          WatchLLM is open source. It runs on your machine. It doesn't call home. It doesn't have a billing page. It doesn't have a sales team. It doesn't have a "growth team" optimizing your conversion funnel. We don't want your money. We want your agent to stop writing <code style="color: var(--accent); background: rgba(255,255,255,0.04); padding: 0.1rem 0.3rem;">eval()</code> into production. That's it. That's the entire business model.
+        </p>
+
+        <div class="pricing-grid">
+
+          <!-- Tier 1: Hobby -->
+          <div class="pricing-tier">
+            <div class="tier-label">TIER 01</div>
+            <div class="tier-name">HOBBY</div>
+            <div class="tier-price">$0</div>
+            <div class="tier-price-sub">FOREVER. NOT A FREE TRIAL.</div>
+            <a href="#" class="tier-cta">RUN IT</a>
+            <ul class="tier-features">
+              <li>Full kernel. All 4 rules. <strong>No gatekeeping.</strong></li>
+              <li>AST-level interception in &lt;10ms</li>
+              <li>Shadow mode + enforce mode</li>
+              <li>Local SQLite logs. <strong>Your data never leaves your machine.</strong></li>
+              <li>VS Code extension included</li>
+              <li>Community issues (we'll get to them eventually)</li>
+            </ul>
+          </div>
+
+          <!-- Tier 2: OG / Broke / Maverick -->
+          <div class="pricing-tier pricing-tier--og">
+            <div class="tier-label">TIER 02</div>
+            <div class="tier-name">OG / BROKE / MAVERICK</div>
+            <div class="tier-price">$0.000</div>
+            <div class="tier-price-sub">WE DON'T WANT YOUR MONEY EITHER</div>
+            <a href="#" class="tier-cta">RUN IT ANYWAY</a>
+            <ul class="tier-features">
+              <li><strong>Everything in Hobby.</strong> Because it's the same thing.</li>
+              <li>Klyd architectural memory engine</li>
+              <li>Execution replay DAG visualization</li>
+              <li>Adversarial test suite (42 tests)</li>
+              <li>Rust/Wasm runtime for browser-side eval</li>
+              <li>Same support as Hobby. Meaning: none.</li>
+              <li>You can star the repo though. <strong>That's the payment.</strong></li>
+            </ul>
+          </div>
+
+          <!-- Tier 3: Enterprise -->
+          <div class="pricing-tier pricing-tier--enterprise">
+            <div class="tier-label">TIER 03</div>
+            <div class="tier-name">ENTERPRISE</div>
+            <div class="tier-price">$0.0000000000</div>
+            <div class="tier-price-sub">WE STILL DON'T WANT YOUR MONEY</div>
+            <a href="#" class="tier-cta">RUN IT, WE DON'T CARE</a>
+            <ul class="tier-features">
+              <li><strong>Everything above.</strong> Still the same. It's open source.</li>
+              <li>A dedicated Slack channel where we ignore your questions for 72 hours</li>
+              <li class="dont">DONT CONTACT US</li>
+              <li>No SLA. No SOC2. No ISO 27001. No compliance theater.</li>
+              <li>No "customer success manager." No quarterly business reviews.</li>
+              <li>No procurement calls. No legal redlines. No MSA.</li>
+              <li>If you need an enterprise plan, <strong>you don't understand what open source means.</strong></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <p class="pricing-footnote">
+          * There is no paid tier. There is no "contact sales." There is no usage limit. There is no rate limit. There is no API key. There is no dashboard. There is no billing portal. There is no refund policy because there is no billing. If someone tries to sell you WatchLLM, they are scamming you. Report them. Then run <code style="color: var(--accent);">pip install watchllm</code> and move on with your life.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== SUPPORT ===== -->
+    <section id="support" class="section section--support">
+      <div class="section-container" style="text-align: center;">
+        <span class="section-label">07</span>
+        <h2 class="section-title brutal-text" style="text-align: center; margin: 0 auto 4rem;">
+          SUPPORT
+        </h2>
+
+        <div class="support-card">
+          <div class="support-error-header">
+            <span class="support-error-code">429</span>
+            <span class="support-error-msg">TOO MANY REQUESTS. SLOW DOWN.</span>
+          </div>
+          <div class="support-body">
+            <h3 class="support-title">
+              YOU WANT SUPPORT?<br>
+              <span style="color: var(--red);">HERE'S YOUR SUPPORT.
+            </h3>
+
+            <ol class="support-steps">
+              <li>Read the code. It's open source. <span class="fg-dim">Every line is documented. The tests are the documentation. The code is the spec.</span></li>
+              <li>Open an issue <span class="fg-dim">(we'll ignore it for 72 hours).</span></li>
+              <li>Figure it out. <span class="fg-dim">You're a developer. You've debugged worse than this.</span></li>
+            </ol>
+
+            <p class="support-closer">
+              You are a developer,<br>
+              not a product manager.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TERMS OF DISSERVICE ===== -->
+    <section id="legal" class="section section--legal">
+      <div class="legal-container">
+        <h2 class="legal-title">TERMS OF DISSERVICE</h2>
+
+        <ul class="legal-list">
+          <li>By installing this software, you agree that <strong>we are not responsible</strong> if your AI agent gets depressed, develops anxiety, or enters an existential spiral after having its code blocked repeatedly. WatchLLM is a governance tool, not a therapist. Your agent's emotional well-being is between you, your agent, and whatever god you pray to at 3 AM when the pager goes off.</li>
+
+          <li>We don't store your data because <em>we don't have servers.</em> We don't have a privacy policy because <em>we don't have your data.</em> We don't have a data processing agreement because there is no data to process. We don't have a DPO because there is nothing to protect. We don't have a breach notification procedure because <strong>there is nothing to breach.</strong> The software runs on your machine. The logs are on your disk. If you're worried about your data, look at the other 47 SaaS tools in your stack with access to your repo. WatchLLM is the least of your problems.</li>
+
+          <li>If you try to sue us, we will immediately counter-sue for <strong>wasting our terminal time.</strong> We do not have a legal department. We do not have a registered agent. We do not have a physical address. We are a floating void of Python bytes. Good luck serving legal papers to a <code style="color: #555; background: rgba(255,255,255,0.03); padding: 0.05rem 0.2rem;">pip install</code> command. We are distributed across the PyPI registry, a GitHub repository, and whatever local cache directory your machine decided to use. We exist in the same legal jurisdiction as <em>tarballs</em> and <em>makefiles.</em> If you can figure out how to subpoena a wheel file, please let us know. We'd be genuinely impressed.</li>
+        </ul>
+
+        <p class="legal-closer">
+          WATCHLLM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. — THIS IS THE MIT LICENSE. WE DIDN'T EVEN WRITE THIS. IT'S STANDARD. GO READ IT.
+        </p>
+      </div>
+    </section>
+
+  </body>
+</html>
