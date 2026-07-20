@@ -1,9 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Rust
+target/
+
+# Node / VSCode
+node_modules/
+dist/
+.vscode-test/
+
+# Misc
+.DS_Store
+*.log
+.env
+.klyd/
+
+# Aider
 .aider*
 
-node_modules/
-target/
-__pycache__/
-*.egg-info/
-.pytest_cache/
+# Cloudflare Wrangler local state
+.wrangler/
+
+# Session transcripts and large temporary logs
+session-*.md
+
+# Python build artifacts
 build/
-dist/
+*.vsix
+
+# OSS exporter staging directory
+.oss-staging/

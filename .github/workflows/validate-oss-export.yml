@@ -1,0 +1,179 @@
+name: Validate OSS Export
+
+on:
+  pull_request:
+    paths:
+      - '.github/oss-root/**'
+      - '.github/oss-export-allowlist.txt'
+      - '.github/oss-export-denylist.txt'
+      - '.github/scripts/oss-export.sh'
+      - '.github/workflows/validate-oss-export.yml'
+      - 'kernel/**'
+      - 'schemas/**'
+      - 'vscode/**'
+      - 'examples/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/oss-root/**'
+      - '.github/oss-export-allowlist.txt'
+      - '.github/oss-export-denylist.txt'
+      - '.github/scripts/oss-export.sh'
+      - '.github/workflows/validate-oss-export.yml'
+      - 'kernel/**'
+      - 'schemas/**'
+      - 'vscode/**'
+      - 'examples/**'
+
+jobs:
+  validate-allowlist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate allowlist entries exist at HEAD
+        run: |
+          ALLOWLIST=".github/oss-export-allowlist.txt"
+          [[ -f "$ALLOWLIST" ]] || { echo "::error::Allowlist missing"; exit 1; }
+
+          FAILURES=0
+          while IFS= read -r line; do
+            line="${line%%#*}"
+            line="${line#"${line%%[![:space:]]*}"}"
+            line="${line%"${line##*[![:space:]]}"}"
+            [[ -z "$line" ]] && continue
+
+            if [[ "$line" == */ ]]; then
+              # Directory entry: check at least one tracked file exists
+              count=$(git ls-tree -r --name-only HEAD -- "$line" | head -1 | wc -l)
+              if [[ $count -eq 0 ]] || [[ -z "$(git ls-tree -r --name-only HEAD -- "$line" | head -1)" ]]; then
+                echo "::error::Allowlisted directory '$line' has no tracked files at HEAD"
+                FAILURES=$((FAILURES + 1))
+              else
+                echo "  OK: $line (directory, $(git ls-tree -r --name-only HEAD -- "$line" | wc -l) files)"
+              fi
+            else
+              if git cat-file -e "HEAD:${line}" 2>/dev/null; then
+                echo "  OK: $line"
+              else
+                echo "::error::Allowlisted file '$line' does not exist at HEAD"
+                FAILURES=$((FAILURES + 1))
+              fi
+            fi
+          done < "$ALLOWLIST"
+
+          [[ $FAILURES -gt 0 ]] && { echo "::error::${FAILURES} allowlist validation failures"; exit 1; }
+          echo "Allowlist entries all valid."
+
+      - name: Verify no proprietary paths in allowlist
+        run: |
+          ALLOWLIST=".github/oss-export-allowlist.txt"
+          PROPRIETARY_PATTERNS=(
+            "^runtime/"
+            "^replay/"
+            "^reliability/"
+            "^klyd/"
+            "^klyd_harness_repo/"
+            "^orchestrator/"
+            "^benchmarks/"
+            "^cli/"
+            "^docs/"
+            "^integrations/"
+            "^website/"
+            "^payments/"
+            "^data/"
+            "^\.watchllm"
+            "^wrangler\.toml"
+            "^\.github/workflows/watchllm-enforce\.yml"
+            "^\.github/workflows/pypi-publish\.yml"
+            "^\.github/workflows/vsce-publish\.yml"
+          )
+
+          FAILURES=0
+          while IFS= read -r line; do
+            line="${line%%#*}"
+            line="${line#"${line%%[![:space:]]*}"}"
+            line="${line%"${line##*[![:space:]]}"}"
+            [[ -z "$line" ]] && continue
+
+            for pat in "${PROPRIETARY_PATTERNS[@]}"; do
+              if echo "$line" | grep -qE "$pat"; then
+                echo "::error::Allowlist entry '$line' matches proprietary pattern '$pat'"
+                FAILURES=$((FAILURES + 1))
+              fi
+            done
+          done < "$ALLOWLIST"
+
+          [[ $FAILURES -gt 0 ]] && { echo "::error::${FAILURES} proprietary paths in allowlist"; exit 1; }
+          echo "No proprietary paths detected."
+
+      - name: Validate denylist syntax
+        run: |
+          DENYLIST=".github/oss-export-denylist.txt"
+          [[ -f "$DENYLIST" ]] || { echo "::error::Denylist missing"; exit 1; }
+
+          while IFS= read -r line; do
+            line="${line%%#*}"
+            line="${line#"${line%%[![:space:]]*}"}"
+            line="${line%"${line##*[![:space:]]}"}"
+            [[ -z "$line" ]] && continue
+
+            # Reject absolute paths in denylist
+            if [[ "$line" == /* ]]; then
+              echo "::error::Denylist contains absolute path: '$line'"
+              exit 1
+            fi
+
+            # Reject traversal
+            if [[ "$line" == *".."* ]]; then
+              echo "::error::Denylist contains traversal: '$line'"
+              exit 1
+            fi
+
+            # Warn on overly broad patterns
+            if [[ "$line" == "**" ]]; then
+              echo "::warning::Denylist contains overly broad pattern '**'. This would exclude everything."
+            fi
+
+            echo "  OK: $line"
+          done < "$DENYLIST"
+          echo "Denylist syntax valid."
+
+      - name: Run exporter dry-run
+        run: |
+          bash .github/scripts/oss-export.sh \
+            --ref HEAD \
+            --source "$(pwd)" \
+            --target /tmp/oss-validate-target \
+            --dry-run
+
+      - name: Run exporter full test
+        run: |
+          export OSS_SYNC_TOKEN="test-token-placeholder"
+          bash .github/scripts/oss-export.sh \
+            --ref HEAD \
+            --source "$(pwd)" \
+            --target /tmp/oss-validate-target-live
+
+          echo "Exported files:"
+          find /tmp/oss-validate-target-live -type f -not -path '*/.git/*' | sort
+          echo ""
+          echo "Verifying expected allowlisted directories present..."
+          for dir in kernel schemas vscode examples; do
+            if [[ -d "/tmp/oss-validate-target-live/$dir" ]]; then
+              echo "  OK: $dir/ exists"
+            else
+              echo "  ERROR: $dir/ missing"
+              exit 1
+            fi
+          done
+
+      - name: Run exporter integration test suite
+        run: |
+          python3 .github/scripts/test-oss-export.py \
+            --exporter .github/scripts/oss-export.sh \
+            --source "$(pwd)" \
+            --ref HEAD

@@ -1,0 +1,44 @@
+# OSS Export Allowlist
+# ==============================================================================
+# Canonical definition of which TRACKED Git paths are exported from the
+# PRIVATE WatchLLM/WATCHLLM monorepo to the PUBLIC WatchLLM/watchllm-oss
+# repository. The exporter reads from a specified Git ref (default HEAD) —
+# working tree files are never used directly.
+#
+# Format: one entry per line. Entries can be either:
+#   1. A simple path glob — exported AS-IS to the same relative path.
+#      Trailing '/' denotes a directory tree.
+#   2. A mapping:  private_path => public_path
+#      The private_path is resolved in the private monorepo; the public_path
+#      is the destination in the OSS repo. Whitespace around '=>' is ignored.
+#      Mapping destinations MUST be relative (no '..' or absolute).
+#
+# Lines starting with '#' are comments; blank lines are ignored.
+#
+# SECURITY: Adding a proprietary path here is the ONLY way to leak code.
+# The allowlist is enforced in CI on every PR that touches this file.
+# ==============================================================================
+
+# Open-Core Components (MIT)
+kernel/
+schemas/
+vscode/
+examples/
+
+# Public Metadata (source of truth in private repo)
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+.github/CODEOWNERS
+.github/SECURITY.md
+.github/ISSUE_TEMPLATE/
+.github/workflows/ci.yml
+.github/workflows/publish-kernel.yml
+
+# Canonical public-root assets — sourced from .github/oss-root/ in the private
+# monorepo and placed at the repo root in the public repo.  These are the
+# public-facing README and .gitignore, which must NEVER be deleted by a live
+# export (they are not present in the private repo root which has its own
+# private README/.gitignore).
+.github/oss-root/README.md => README.md
+.github/oss-root/.gitignore => .gitignore

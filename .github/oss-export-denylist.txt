@@ -1,0 +1,38 @@
+# OSS Export Denylist
+# ==============================================================================
+# Even if a file is under an allowlisted directory, it MUST NOT be exported
+# if it matches any pattern in this denylist. Patterns use gitwildmatch-like
+# semantics anchored at the repo root.
+#
+# Lines starting with '#' are comments; blank lines are ignored.
+# ==============================================================================
+
+# Internal tracking docs (never public)
+**/internal_docs/**
+**/AUDIT.md
+**/tasks.md
+
+# Generated / cache / log / build output (never public)
+**/__pycache__/**
+**/*.pyc
+**/.pytest_cache/**
+**/*.egg-info/**
+**/dist/**
+**/build/**
+**/*.log
+**/node_modules/**
+**/target/**
+**/CACHEDIR.TAG
+**/.DS_Store
+**/.env
+
+# Project-specific proprietary vectors
+kernel/openclaw.txt
+vscode/path
+kernel/.watchllm/logs/**
+
+# IDE / tooling (never public)
+**/.vscode/**
+**/.idea/**
+**/*.vsix
+**/.klyd/**

@@ -1,0 +1,76 @@
+name: Export to Open Source Repo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kernel/**'
+      - 'schemas/**'
+      - 'vscode/**'
+      - 'examples/**'
+      - 'CHANGELOG.md'
+      - 'CONTRIBUTING.md'
+      - 'LICENSE'
+      - '.github/CODEOWNERS'
+      - '.github/SECURITY.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/publish-kernel.yml'
+      - '.github/oss-root/**'
+      - '.github/oss-export-allowlist.txt'
+      - '.github/oss-export-denylist.txt'
+      - '.github/scripts/oss-export.sh'
+
+jobs:
+  export-oss:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Private Monorepo
+        uses: actions/checkout@v4
+        with:
+          path: monorepo
+          fetch-depth: 0
+
+      - name: Validate OSS Sync Token
+        env:
+          OSS_SYNC_TOKEN: ${{ secrets.OSS_SYNC_TOKEN }}
+        run: |
+          if [[ -z "${OSS_SYNC_TOKEN:-}" ]]; then
+            echo "::error::OSS_SYNC_TOKEN secret is not set. A fine-grained token is required."
+            exit 1
+          fi
+
+      - name: Checkout Public OSS Repo
+        uses: actions/checkout@v4
+        with:
+          repository: WatchLLM/watchllm-oss
+          token: ${{ secrets.OSS_SYNC_TOKEN }}
+          path: oss-repo
+
+      - name: Export OSS Components
+        run: |
+          cd monorepo
+          bash .github/scripts/oss-export.sh \
+            --ref HEAD \
+            --source "$(pwd)" \
+            --target "$(pwd)/../oss-repo"
+
+      - name: Commit and Push
+        run: |
+          cd oss-repo
+
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            git add .
+            git commit -m "chore: sync open-core components from upstream"
+            git push origin main
+
+            echo "Changes synced to WatchLLM/watchllm-oss successfully."
+          else
+            echo "No changes to sync."
+          fi
