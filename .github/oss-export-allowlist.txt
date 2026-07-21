@@ -15,8 +15,8 @@
 #
 # Lines starting with '#' are comments; blank lines are ignored.
 #
-# SECURITY: Adding a proprietary path here is the ONLY way to leak code.
-# The allowlist is enforced in CI on every PR that touches this file.
+# SECURITY: Never add proprietary paths. Changes to this manifest, the
+# exporter, or its workflows require security review and CI validation.
 # ==============================================================================
 
 # Open-Core Components (MIT)
@@ -28,7 +28,6 @@ examples/
 # Public Metadata (source of truth in private repo)
 CHANGELOG.md
 CONTRIBUTING.md
-LICENSE
 .github/CODEOWNERS
 .github/SECURITY.md
 .github/ISSUE_TEMPLATE/
@@ -42,3 +41,4 @@ LICENSE
 # private README/.gitignore).
 .github/oss-root/README.md => README.md
 .github/oss-root/.gitignore => .gitignore
+.github/oss-root/LICENSE => LICENSE

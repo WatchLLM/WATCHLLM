@@ -1,4 +1,4 @@
-name: Export to Open Source Repo
+name: Propose Open Source Export
 
 on:
   push:
@@ -11,7 +11,6 @@ on:
       - 'examples/**'
       - 'CHANGELOG.md'
       - 'CONTRIBUTING.md'
-      - 'LICENSE'
       - '.github/CODEOWNERS'
       - '.github/SECURITY.md'
       - '.github/ISSUE_TEMPLATE/**'
@@ -21,36 +20,61 @@ on:
       - '.github/oss-export-allowlist.txt'
       - '.github/oss-export-denylist.txt'
       - '.github/scripts/oss-export.sh'
+      - '.github/scripts/test-oss-export.py'
+      - '.github/workflows/oss-sync.yml'
+      - '.github/OSS_SYNC.md'
+
+concurrency:
+  group: oss-export-pr
+  cancel-in-progress: true
 
 jobs:
-  export-oss:
+  propose-export:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      OSS_REPOSITORY: WatchLLM/watchllm-oss
+      OSS_EXPORT_BRANCH: automation/oss-export
     steps:
-      - name: Checkout Private Monorepo
+      - name: Checkout private monorepo
         uses: actions/checkout@v4
         with:
           path: monorepo
           fetch-depth: 0
 
-      - name: Validate OSS Sync Token
+      - name: Validate OSS sync token
         env:
           OSS_SYNC_TOKEN: ${{ secrets.OSS_SYNC_TOKEN }}
         run: |
           if [[ -z "${OSS_SYNC_TOKEN:-}" ]]; then
-            echo "::error::OSS_SYNC_TOKEN secret is not set. A fine-grained token is required."
+            echo "::error::OSS_SYNC_TOKEN is not set. See .github/OSS_SYNC.md for the required fine-grained permissions."
             exit 1
           fi
 
-      - name: Checkout Public OSS Repo
+      - name: Validate exporter
+        working-directory: monorepo
+        run: |
+          python3 .github/scripts/test-oss-export.py \
+            --exporter .github/scripts/oss-export.sh \
+            --source "$(pwd)" \
+            --ref HEAD
+
+      - name: Checkout public OSS repository
         uses: actions/checkout@v4
         with:
-          repository: WatchLLM/watchllm-oss
+          repository: ${{ env.OSS_REPOSITORY }}
           token: ${{ secrets.OSS_SYNC_TOKEN }}
           path: oss-repo
+          fetch-depth: 0
 
-      - name: Export OSS Components
+      - name: Prepare deterministic export branch
+        working-directory: oss-repo
+        run: |
+          git fetch origin main "$OSS_EXPORT_BRANCH" || git fetch origin main
+          git checkout -B "$OSS_EXPORT_BRANCH" origin/main
+
+      - name: Export OSS components
         run: |
           cd monorepo
           bash .github/scripts/oss-export.sh \
@@ -58,19 +82,62 @@ jobs:
             --source "$(pwd)" \
             --target "$(pwd)/../oss-repo"
 
-      - name: Commit and Push
+      - name: Commit export branch
+        id: commit
+        working-directory: oss-repo
         run: |
-          cd oss-repo
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Public repository already matches the canonical export."
+            exit 0
+          fi
 
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: sync open-core components from ${GITHUB_SHA::12}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
-            git add .
-            git commit -m "chore: sync open-core components from upstream"
-            git push origin main
+      - name: Push export branch
+        if: steps.commit.outputs.changed == 'true'
+        working-directory: oss-repo
+        run: |
+          # This branch is generated from public main on every run. Force-with-
+          # lease is limited to the automation branch; public main is never pushed.
+          git push --force-with-lease origin "HEAD:$OSS_EXPORT_BRANCH"
 
-            echo "Changes synced to WatchLLM/watchllm-oss successfully."
+      - name: Create or update review PR
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.OSS_SYNC_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          existing_pr="$(gh pr list \
+            --repo "$OSS_REPOSITORY" \
+            --head "$OSS_EXPORT_BRANCH" \
+            --base main \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')"
+
+          body=$(cat <<EOF
+          Automated open-core export from private monorepo commit \`${SOURCE_SHA}\`.
+
+          Review and required public-repository checks must pass before merging.
+          This workflow never pushes directly to \`main\`.
+          EOF
+          )
+
+          if [[ -n "$existing_pr" ]]; then
+            gh pr edit "$existing_pr" \
+              --repo "$OSS_REPOSITORY" \
+              --title "chore: sync canonical open-core export" \
+              --body "$body"
           else
-            echo "No changes to sync."
+            gh pr create \
+              --repo "$OSS_REPOSITORY" \
+              --head "$OSS_EXPORT_BRANCH" \
+              --base main \
+              --title "chore: sync canonical open-core export" \
+              --body "$body"
           fi

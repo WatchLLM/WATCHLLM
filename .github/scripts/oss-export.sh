@@ -124,9 +124,10 @@ while IFS= read -r line; do
       echo "ERROR: Empty destination in mapping: $line" >&2; exit 1
     fi
 
-    # Strict public-root asset contract: only README.md or .gitignore
-    if [[ "$dst" != "README.md" && "$dst" != ".gitignore" ]]; then
-      echo "ERROR: Mapping destination must be exactly README.md or .gitignore, got: '$dst'" >&2
+    # Strict public-root asset contract. Keep mapped destinations explicit so
+    # private-repository metadata cannot be relocated into arbitrary paths.
+    if [[ "$dst" != "README.md" && "$dst" != ".gitignore" && "$dst" != "LICENSE" ]]; then
+      echo "ERROR: Mapping destination must be README.md, .gitignore, or LICENSE, got: '$dst'" >&2
       exit 1
     fi
 
@@ -401,6 +402,10 @@ for msrc in "${!MAPPINGS[@]}"; do
     [[ "$map_mode" == "160000" || "$map_otype" == "commit" ]] && {
       echo "SECURITY: Mapped submodule rejected — ${msrc}" >&2; exit 1
     }
+    if is_denied "$msrc"; then
+      echo "ERROR: Mapped source file '${msrc}' is denied by the denylist" >&2
+      exit 1
+    fi
 
     EXPORT_MAP["$mdst"]="$msrc"
     ((EXPORT_COUNT+=1)) || true
@@ -424,7 +429,13 @@ for entry in "${ALLOWED_RAW[@]}"; do
   else
     src="$entry"
   fi
-  [[ "$src" == */ ]] && continue  # tree entry, already handled
+  if [[ "$src" == */ ]]; then
+    if [[ -z "$(git -C "$SOURCE" ls-tree -r --name-only "$REF" -- "$src" | head -n 1)" ]]; then
+      echo "ERROR: Allowlisted directory '${src}' has no tracked files at ref ${REF}" >&2
+      FAILED=$((FAILED + 1))
+    fi
+    continue
+  fi
   if ! git -C "$SOURCE" cat-file -e "${REF}:${src}" 2>/dev/null; then
     echo "ERROR: Allowlisted file '${src}' does not exist at ref ${REF}" >&2
     FAILED=$((FAILED + 1))

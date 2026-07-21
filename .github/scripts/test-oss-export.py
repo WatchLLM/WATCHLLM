@@ -114,7 +114,7 @@ class OSSExportTests(unittest.TestCase):
             # Metadata — these must be tracked
             "CHANGELOG.md": "# Changelog",
             "CONTRIBUTING.md": "# Contributing",
-            "LICENSE": "MIT License",
+            "LICENSE": "PRIVATE REPOSITORY NOTICE",
 
             # .github files
             ".github/CODEOWNERS": "* @watchllm/owners",
@@ -132,7 +132,6 @@ vscode/
 examples/
 CHANGELOG.md
 CONTRIBUTING.md
-LICENSE
 .github/CODEOWNERS
 .github/SECURITY.md
 .github/ISSUE_TEMPLATE/
@@ -140,6 +139,7 @@ LICENSE
 .github/workflows/publish-kernel.yml
 .github/oss-root/README.md => README.md
 .github/oss-root/.gitignore => .gitignore
+.github/oss-root/LICENSE => LICENSE
 """,
             ".github/oss-export-denylist.txt": """# Denylist
 **/internal_docs/**
@@ -169,6 +169,7 @@ kernel/.watchllm/logs/**
             # Mapped public-root assets (source of truth for README/.gitignore)
             ".github/oss-root/README.md": "# WatchLLM OSS\\nOpen-core governance platform.",
             ".github/oss-root/.gitignore": "*.pyc\\n__pycache__/",
+            ".github/oss-root/LICENSE": "MIT License\\n",
         }
 
         for path, content in dirs_and_files.items():
@@ -631,12 +632,14 @@ kernel/.watchllm/logs/**
         # README.md must be present and match fixture source content
         self.assertIn("README.md", files, "README.md not exported from mapping")
         self.assertIn(".gitignore", files, ".gitignore not exported from mapping")
+        self.assertIn("LICENSE", files, "LICENSE not exported from mapping")
 
         # Verify byte-for-byte content match
         target_readme = os.path.join(target, "README.md")
         target_gitignore = os.path.join(target, ".gitignore")
         src_readme = os.path.join(self.test_git_dir, ".github", "oss-root", "README.md")
         src_gitignore = os.path.join(self.test_git_dir, ".github", "oss-root", ".gitignore")
+        src_license = os.path.join(self.test_git_dir, ".github", "oss-root", "LICENSE")
 
         with open(target_readme, "rb") as f:
             t_r = f.read()
@@ -649,6 +652,12 @@ kernel/.watchllm/logs/**
         with open(src_gitignore, "rb") as f:
             s_g = f.read()
         self.assertEqual(t_g, s_g, ".gitignore content does not match source byte-for-byte")
+
+        with open(os.path.join(target, "LICENSE"), "rb") as f:
+            t_l = f.read()
+        with open(src_license, "rb") as f:
+            s_l = f.read()
+        self.assertEqual(t_l, s_l, "LICENSE content does not match source byte-for-byte")
 
     def test_20_duplicate_destination_rejected(self):
         """Two mappings with the same destination must be rejected."""
@@ -727,6 +736,23 @@ kernel/.watchllm/logs/**
         # README.md and .gitignore should still be present
         self.assertTrue(os.path.exists(os.path.join(target, "README.md")), "README.md missing after re-export")
         self.assertTrue(os.path.exists(os.path.join(target, ".gitignore")), ".gitignore missing after re-export")
+
+    def test_23_empty_allowlisted_directory_rejected(self):
+        """A directory entry with no tracked files must fail closed."""
+        self.build_fixture_repo()
+        empty_repo = os.path.join(self.temp_root, "empty-dir-repo")
+        shutil.copytree(self.test_git_dir, empty_repo, symlinks=True)
+        allowlist_path = os.path.join(empty_repo, ".github", "oss-export-allowlist.txt")
+        with open(allowlist_path, "w") as f:
+            f.write("missing-directory/\n")
+
+        stdout, stderr, rc = self._export(
+            source=empty_repo,
+            target=os.path.join(self.temp_root, "target-empty-dir"),
+            expect_failure=True,
+        )
+        self.assertNotEqual(rc, 0)
+        self.assertIn("has no tracked files", stderr + stdout)
 
 
 def run_with_real_repo():
