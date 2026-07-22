@@ -54,8 +54,9 @@ Build the open-core infrastructure that makes agent governance:
 
 ### 2. Open-Core by Default
 
-- The kernel, schemas, VS Code extension, and examples are **MIT-licensed**.
-- The Rust runtime, replay dashboard, reliability engine, klyd memory, and webproof engine are **proprietary**.
+- The currently shipped kernel, schemas, VS Code extension, and examples are **MIT-licensed**.
+- A MIT-licensed webproof client SDK is planned but has not shipped. Do not describe it as available until its package and public API exist.
+- The Rust runtime, replay dashboard, reliability engine, klyd memory, orchestrator, and webproof proving/verification engine are **proprietary**.
 - This maximizes distribution while preserving our moat.
 
 ### 3. Performance Is Non-Negotiable

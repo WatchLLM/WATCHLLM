@@ -7,7 +7,17 @@ on:
       - '.github/oss-export-allowlist.txt'
       - '.github/oss-export-denylist.txt'
       - '.github/scripts/oss-export.sh'
+      - '.github/scripts/test-oss-export.py'
       - '.github/workflows/validate-oss-export.yml'
+      - '.github/OSS_SYNC.md'
+      - 'CHANGELOG.md'
+      - 'CONTRIBUTING.md'
+      - 'LICENSE'
+      - '.github/CODEOWNERS'
+      - '.github/SECURITY.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/publish-kernel.yml'
       - 'kernel/**'
       - 'schemas/**'
       - 'vscode/**'
@@ -20,7 +30,17 @@ on:
       - '.github/oss-export-allowlist.txt'
       - '.github/oss-export-denylist.txt'
       - '.github/scripts/oss-export.sh'
+      - '.github/scripts/test-oss-export.py'
       - '.github/workflows/validate-oss-export.yml'
+      - '.github/OSS_SYNC.md'
+      - 'CHANGELOG.md'
+      - 'CONTRIBUTING.md'
+      - 'LICENSE'
+      - '.github/CODEOWNERS'
+      - '.github/SECURITY.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/publish-kernel.yml'
       - 'kernel/**'
       - 'schemas/**'
       - 'vscode/**'
@@ -33,40 +53,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Validate allowlist entries exist at HEAD
-        run: |
-          ALLOWLIST=".github/oss-export-allowlist.txt"
-          [[ -f "$ALLOWLIST" ]] || { echo "::error::Allowlist missing"; exit 1; }
-
-          FAILURES=0
-          while IFS= read -r line; do
-            line="${line%%#*}"
-            line="${line#"${line%%[![:space:]]*}"}"
-            line="${line%"${line##*[![:space:]]}"}"
-            [[ -z "$line" ]] && continue
-
-            if [[ "$line" == */ ]]; then
-              # Directory entry: check at least one tracked file exists
-              count=$(git ls-tree -r --name-only HEAD -- "$line" | head -1 | wc -l)
-              if [[ $count -eq 0 ]] || [[ -z "$(git ls-tree -r --name-only HEAD -- "$line" | head -1)" ]]; then
-                echo "::error::Allowlisted directory '$line' has no tracked files at HEAD"
-                FAILURES=$((FAILURES + 1))
-              else
-                echo "  OK: $line (directory, $(git ls-tree -r --name-only HEAD -- "$line" | wc -l) files)"
-              fi
-            else
-              if git cat-file -e "HEAD:${line}" 2>/dev/null; then
-                echo "  OK: $line"
-              else
-                echo "::error::Allowlisted file '$line' does not exist at HEAD"
-                FAILURES=$((FAILURES + 1))
-              fi
-            fi
-          done < "$ALLOWLIST"
-
-          [[ $FAILURES -gt 0 ]] && { echo "::error::${FAILURES} allowlist validation failures"; exit 1; }
-          echo "Allowlist entries all valid."
 
       - name: Verify no proprietary paths in allowlist
         run: |
@@ -99,9 +85,11 @@ jobs:
             line="${line%"${line##*[![:space:]]}"}"
             [[ -z "$line" ]] && continue
 
+            source_path="${line%%=>*}"
+            source_path="${source_path%"${source_path##*[![:space:]]}"}"
             for pat in "${PROPRIETARY_PATTERNS[@]}"; do
-              if echo "$line" | grep -qE "$pat"; then
-                echo "::error::Allowlist entry '$line' matches proprietary pattern '$pat'"
+              if echo "$source_path" | grep -qE "$pat"; then
+                echo "::error::Allowlist source '$source_path' matches proprietary pattern '$pat'"
                 FAILURES=$((FAILURES + 1))
               fi
             done
@@ -142,7 +130,7 @@ jobs:
           done < "$DENYLIST"
           echo "Denylist syntax valid."
 
-      - name: Run exporter dry-run
+      - name: Validate allowlist, mappings, sources, and destinations
         run: |
           bash .github/scripts/oss-export.sh \
             --ref HEAD \
