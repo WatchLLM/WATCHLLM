@@ -38,13 +38,13 @@ updates:
 
   - package-ecosystem: pip
     directory: /kernel
-    schedule: &weekly
+    schedule:
       interval: weekly
       day: monday
       time: "06:15"
       timezone: UTC
     open-pull-requests-limit: 3
-    groups: &python-groups
+    groups:
       python-runtime:
         dependency-type: production
       python-development:
@@ -52,13 +52,25 @@ updates:
 
   - package-ecosystem: pip
     directory: /runtime
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *python-groups
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
 
   - package-ecosystem: cargo
     directory: /runtime
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
     groups:
       rust-dependencies:
@@ -66,9 +78,13 @@ updates:
 
   - package-ecosystem: npm
     directory: /replay
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: &npm-groups
+    groups:
       npm-runtime:
         dependency-type: production
       npm-development:
@@ -76,48 +92,112 @@ updates:
 
   - package-ecosystem: pip
     directory: /reliability
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *python-groups
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
 
   - package-ecosystem: pip
     directory: /klyd
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *python-groups
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
 
   - package-ecosystem: pip
     directory: /klyd_harness_repo
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *python-groups
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
 
   - package-ecosystem: pip
     directory: /orchestrator
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *python-groups
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
 
   - package-ecosystem: pip
     directory: /cli
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *python-groups
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
 
   - package-ecosystem: pip
     directory: /benchmarks
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *python-groups
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
 
   - package-ecosystem: npm
     directory: /vscode
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *npm-groups
+    groups:
+      npm-runtime:
+        dependency-type: production
+      npm-development:
+        dependency-type: development
 
   - package-ecosystem: npm
     directory: /website
-    schedule: *weekly
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
     open-pull-requests-limit: 3
-    groups: *npm-groups
+    groups:
+      npm-runtime:
+        dependency-type: production
+      npm-development:
+        dependency-type: development
