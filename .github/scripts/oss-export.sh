@@ -124,19 +124,21 @@ while IFS= read -r line; do
       echo "ERROR: Empty destination in mapping: $line" >&2; exit 1
     fi
 
-    # Strict public-root asset contract. Keep mapped destinations explicit so
-    # private-repository metadata cannot be relocated into arbitrary paths.
-    if [[ "$dst" != "README.md" && "$dst" != ".gitignore" && "$dst" != "LICENSE" ]]; then
-      echo "ERROR: Mapping destination must be README.md, .gitignore, or LICENSE, got: '$dst'" >&2
-      exit 1
-    fi
-
-    # Reject destination targeting .github/ (proprietary metadata dir)
-    # (Redundant with strict check above but kept as defense-in-depth)
-    if [[ "$dst" == ".github" || "$dst" == ".github/"* ]]; then
-      echo "ERROR: Mapping destination targets .github/ (proprietary only): $line" >&2
-      exit 1
-    fi
+    # Strict public metadata contract. Keep mapped source/destination pairs
+    # explicit so private-repository metadata cannot be relocated into the
+    # public repository. In particular, public CI must come from its dedicated
+    # open-core template, never from the private monorepo workflow.
+    case "${src}=>${dst}" in
+      ".github/oss-root/README.md=>README.md"|\
+      ".github/oss-root/.gitignore=>.gitignore"|\
+      ".github/oss-root/LICENSE=>LICENSE"|\
+      ".github/oss-root/workflows/ci.yml=>.github/workflows/ci.yml")
+        ;;
+      *)
+        echo "ERROR: Mapping is not an approved public metadata pair: '$line'" >&2
+        exit 1
+        ;;
+    esac
 
     # Reject duplicate destination (independent of manifest order)
     if [[ -n "${MAPPING_DSTS[$dst]:-}" ]]; then
