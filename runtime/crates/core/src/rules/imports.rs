@@ -16,10 +16,7 @@ const IMPORT_QUERY: &str = r#"
   arguments: (arguments (string) @module))
 "#;
 
-pub const DEFAULT_FORBIDDEN_MODULES: &[&str] = &[
-    "child_process",
-    "vm",
-];
+pub const DEFAULT_FORBIDDEN_MODULES: &[&str] = &["child_process", "vm"];
 
 pub const ELEVATED_RISK_MODULES: &[&str] = &[
     "cluster",
@@ -165,7 +162,10 @@ mod tests {
 
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].rule_id, "watchllm-rule-imports");
-        assert_eq!(violations[0].message, "Forbidden import detected: child_process");
+        assert_eq!(
+            violations[0].message,
+            "Forbidden import detected: child_process"
+        );
         assert_eq!(violations[0].severity, "HIGH");
     }
 
@@ -231,13 +231,9 @@ mod tests {
 
         let tree = parse_source(source, SourceLanguage::TypeScript).unwrap();
 
-        let violations = find_forbidden_imports_in_tree(
-            source,
-            SourceLanguage::TypeScript,
-            &tree,
-            &["express"],
-        )
-        .unwrap();
+        let violations =
+            find_forbidden_imports_in_tree(source, SourceLanguage::TypeScript, &tree, &["express"])
+                .unwrap();
 
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].message, "Forbidden import detected: express");

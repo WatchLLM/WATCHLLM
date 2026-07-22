@@ -24,6 +24,9 @@ on:
       - '.github/workflows/oss-sync.yml'
       - '.github/OSS_SYNC.md'
 
+permissions:
+  contents: read
+
 concurrency:
   group: oss-export-pr
   cancel-in-progress: true
@@ -38,7 +41,7 @@ jobs:
       OSS_EXPORT_BRANCH: automation/oss-export
     steps:
       - name: Checkout private monorepo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           path: monorepo
           fetch-depth: 0
@@ -61,7 +64,7 @@ jobs:
             --ref HEAD
 
       - name: Checkout public OSS repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: ${{ env.OSS_REPOSITORY }}
           token: ${{ secrets.OSS_SYNC_TOKEN }}

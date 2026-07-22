@@ -290,7 +290,10 @@ mod tests {
 
         let violations = find_secret_literals(source, SourceLanguage::TypeScript).unwrap();
 
-        assert!(!violations.is_empty(), "member expression with secret-like property name should trigger");
+        assert!(
+            !violations.is_empty(),
+            "member expression with secret-like property name should trigger"
+        );
     }
 
     #[test]

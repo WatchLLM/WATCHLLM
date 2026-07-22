@@ -15,7 +15,14 @@ fn bench_allowed_typescript(c: &mut Criterion) {
     "#;
 
     c.bench_function("evaluate_allowed_typescript", |b| {
-        b.iter(|| evaluate_source(black_box(source), SourceLanguage::TypeScript, None, "enforce"))
+        b.iter(|| {
+            evaluate_source(
+                black_box(source),
+                SourceLanguage::TypeScript,
+                None,
+                "enforce",
+            )
+        })
     });
 }
 
@@ -33,7 +40,14 @@ fn bench_violating_typescript(c: &mut Criterion) {
     "#;
 
     c.bench_function("evaluate_violating_typescript", |b| {
-        b.iter(|| evaluate_source(black_box(source), SourceLanguage::TypeScript, None, "enforce"))
+        b.iter(|| {
+            evaluate_source(
+                black_box(source),
+                SourceLanguage::TypeScript,
+                None,
+                "enforce",
+            )
+        })
     });
 }
 
