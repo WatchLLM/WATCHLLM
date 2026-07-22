@@ -121,7 +121,21 @@ class OSSExportTests(unittest.TestCase):
             ".github/SECURITY.md": "# Security",
             ".github/ISSUE_TEMPLATE/bug.yml": "name: Bug",
             ".github/ISSUE_TEMPLATE/feature.yml": "name: Feature",
-            ".github/workflows/ci.yml": "name: CI",
+            ".github/workflows/ci.yml": """name: Private CI
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: runtime
+    steps: []
+  replay:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: replay
+    steps: []
+""",
             ".github/workflows/publish-kernel.yml": "name: Publish",
 
             # Also need the allowlist/denylist in this fixture
@@ -135,7 +149,7 @@ CONTRIBUTING.md
 .github/CODEOWNERS
 .github/SECURITY.md
 .github/ISSUE_TEMPLATE/
-.github/workflows/ci.yml
+.github/oss-root/workflows/ci.yml => .github/workflows/ci.yml
 .github/workflows/publish-kernel.yml
 .github/oss-root/README.md => README.md
 .github/oss-root/.gitignore => .gitignore
@@ -170,6 +184,7 @@ kernel/.watchllm/logs/**
             ".github/oss-root/README.md": "# WatchLLM OSS\\nOpen-core governance platform.",
             ".github/oss-root/.gitignore": "*.pyc\\n__pycache__/",
             ".github/oss-root/LICENSE": "MIT License\\n",
+            ".github/oss-root/workflows/ci.yml": "name: Public CI\njobs:\n  kernel:\n    runs-on: ubuntu-latest\n    steps: []\n  vscode:\n    runs-on: ubuntu-latest\n    steps: []\n",
         }
 
         for path, content in dirs_and_files.items():
@@ -473,6 +488,27 @@ kernel/.watchllm/logs/**
         for f in expected:
             self.assertIn(f, files, f"GitHub metadata not exported: {f}")
 
+        # The exported CI target must be sourced from the dedicated public
+        # template. Private-only jobs and component paths must never cross the
+        # repository boundary through the monorepo's full CI workflow.
+        with open(os.path.join(target, ".github", "workflows", "ci.yml")) as f:
+            exported_ci = f.read()
+        with open(os.path.join(self.test_git_dir, ".github", "oss-root", "workflows", "ci.yml")) as f:
+            public_ci = f.read()
+        self.assertEqual(exported_ci, public_ci)
+        self.assertIn("kernel:", exported_ci)
+        self.assertIn("vscode:", exported_ci)
+        private_only_components = (
+            "runtime", "replay", "reliability", "klyd", "klyd_harness_repo",
+            "orchestrator", "cli", "benchmarks", "website",
+        )
+        for component in private_only_components:
+            self.assertNotIn(f"{component}:", exported_ci)
+            self.assertNotIn(f"working-directory: {component}", exported_ci)
+            self.assertNotIn(f"./{component}", exported_ci)
+            self.assertNotIn(f"../{component}", exported_ci)
+        self.assertNotIn("Private CI", exported_ci)
+
     def test_10_build_artifacts_excluded(self):
         """__pycache__, .pyc, .pytest_cache, .env, .DS_Store must be excluded."""
         self.build_fixture_repo()
@@ -669,7 +705,7 @@ kernel/.watchllm/logs/**
         with open(allowlist_path, "w") as f:
             f.write("""kernel/
 .github/oss-root/README.md => README.md
-.github/oss-root/.gitignore => README.md
+.github/oss-root/README.md => README.md
 """)
 
         target = os.path.join(self.temp_root, "target-dup-dst")

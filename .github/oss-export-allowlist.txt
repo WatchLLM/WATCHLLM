@@ -31,14 +31,13 @@ CONTRIBUTING.md
 .github/CODEOWNERS
 .github/SECURITY.md
 .github/ISSUE_TEMPLATE/
-.github/workflows/ci.yml
+.github/oss-root/workflows/ci.yml => .github/workflows/ci.yml
 .github/workflows/publish-kernel.yml
 
 # Canonical public-root assets — sourced from .github/oss-root/ in the private
 # monorepo and placed at the repo root in the public repo.  These are the
-# public-facing README and .gitignore, which must NEVER be deleted by a live
-# export (they are not present in the private repo root which has its own
-# private README/.gitignore).
+# public-facing README, .gitignore, license, and CI workflow. These mappings
+# keep public metadata independent from private monorepo equivalents.
 .github/oss-root/README.md => README.md
 .github/oss-root/.gitignore => .gitignore
 .github/oss-root/LICENSE => LICENSE

@@ -14,7 +14,6 @@ on:
       - '.github/CODEOWNERS'
       - '.github/SECURITY.md'
       - '.github/ISSUE_TEMPLATE/**'
-      - '.github/workflows/ci.yml'
       - '.github/workflows/publish-kernel.yml'
       - '.github/oss-root/**'
       - '.github/oss-export-allowlist.txt'
