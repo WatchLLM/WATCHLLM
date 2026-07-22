@@ -56,10 +56,7 @@ pub fn parse_source(source: &str, language: SourceLanguage) -> Result<Tree, Pars
     Ok(tree)
 }
 
-pub fn parse_source_with_language_name(
-    source: &str,
-    language: &str,
-) -> Result<Tree, ParseError> {
+pub fn parse_source_with_language_name(source: &str, language: &str) -> Result<Tree, ParseError> {
     let parsed_language = SourceLanguage::try_from(language)?;
     parse_source(source, parsed_language)
 }

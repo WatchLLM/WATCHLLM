@@ -220,8 +220,12 @@ fn is_db_call(callee: &str) -> bool {
     if !callee.starts_with("db.") {
         return false;
     }
-    let protected_methods = ["create", "insert", "update", "delete", "remove", "query", "execute", "prepare"];
-    callee.split('.').any(|seg| protected_methods.contains(&seg))
+    let protected_methods = [
+        "create", "insert", "update", "delete", "remove", "query", "execute", "prepare",
+    ];
+    callee
+        .split('.')
+        .any(|seg| protected_methods.contains(&seg))
 }
 
 fn is_auth_call(callee: &str) -> bool {

@@ -37,9 +37,7 @@ pub fn check_boundaries(
         let position = node.start_position();
 
         let mut flagged = false;
-        if let Some((target_module, target_surface)) =
-            classify_import_target(&module_specifier)
-        {
+        if let Some((target_module, target_surface)) = classify_import_target(&module_specifier) {
             if !is_boundary_layer {
                 for (src_mod, rules) in &boundary_map {
                     if rules.contains(&(target_module.clone(), target_surface.clone())) {
@@ -94,9 +92,7 @@ fn classify_import_target(path: &str) -> Option<(String, String)> {
         return Some(("db".to_string(), "internal".to_string()));
     }
 
-    if normalised == "@app/db/internal"
-        || normalised.starts_with("@app/db/internal/")
-    {
+    if normalised == "@app/db/internal" || normalised.starts_with("@app/db/internal/") {
         return Some(("db".to_string(), "internal".to_string()));
     }
     if normalised == "@app/db/public" || normalised.starts_with("@app/db/public/") {
@@ -109,7 +105,8 @@ fn classify_import_target(path: &str) -> Option<(String, String)> {
         "../../db/internal",
         "../../../db/internal",
     ] {
-        if normalised == *relative_prefix || normalised.starts_with(&format!("{}/", relative_prefix))
+        if normalised == *relative_prefix
+            || normalised.starts_with(&format!("{}/", relative_prefix))
         {
             return Some(("db".to_string(), "internal".to_string()));
         }
@@ -120,7 +117,8 @@ fn classify_import_target(path: &str) -> Option<(String, String)> {
         "../../db/public",
         "../../../db/public",
     ] {
-        if normalised == *relative_prefix || normalised.starts_with(&format!("{}/", relative_prefix))
+        if normalised == *relative_prefix
+            || normalised.starts_with(&format!("{}/", relative_prefix))
         {
             return Some(("db".to_string(), "public".to_string()));
         }

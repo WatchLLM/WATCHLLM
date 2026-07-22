@@ -31,24 +31,14 @@ pub fn evaluate_source_with_language_name(
 ) -> KernelExecutionResult {
     let parsed_language = match SourceLanguage::try_from(language) {
         Ok(language) => language,
-        Err(err) => {
-            return error_result(
-                format!("Parser error: {:?}", err),
-                file_path,
-                language,
-            )
-        }
+        Err(err) => return error_result(format!("Parser error: {:?}", err), file_path, language),
     };
 
     evaluate_source(source, parsed_language, file_path, mode)
 }
 
-fn evaluate_all_rules(
-    source: &str,
-    language: SourceLanguage,
-) -> Result<Vec<RuleResult>, String> {
-    let tree = parse_source(source, language)
-        .map_err(|err| format!("Parser error: {:?}", err))?;
+fn evaluate_all_rules(source: &str, language: SourceLanguage) -> Result<Vec<RuleResult>, String> {
+    let tree = parse_source(source, language).map_err(|err| format!("Parser error: {:?}", err))?;
 
     let mut rule_results = Vec::new();
 
@@ -75,13 +65,14 @@ fn evaluate_all_rules(
     Ok(rule_results)
 }
 
-fn eval_rule(
-    rule_id: &str,
-    result: Result<Vec<KernelViolation>, RuleError>,
-) -> RuleResult {
+fn eval_rule(rule_id: &str, result: Result<Vec<KernelViolation>, RuleError>) -> RuleResult {
     match result {
         Ok(violations) => {
-            let status = if violations.is_empty() { "PASS" } else { "FAIL" };
+            let status = if violations.is_empty() {
+                "PASS"
+            } else {
+                "FAIL"
+            };
             RuleResult {
                 rule_id: rule_id.to_string(),
                 status: status.to_string(),
@@ -140,11 +131,7 @@ fn language_name(language: &SourceLanguage) -> String {
     }
 }
 
-fn error_result(
-    message: String,
-    file_path: Option<&str>,
-    language: &str,
-) -> KernelExecutionResult {
+fn error_result(message: String, file_path: Option<&str>, language: &str) -> KernelExecutionResult {
     KernelExecutionResult {
         decision: "ALLOW".to_string(),
         mode: "enforce".to_string(),
@@ -211,10 +198,7 @@ mod tests {
             .collect();
         assert_eq!(failing.len(), 4);
 
-        let rule_ids: Vec<&str> = failing
-            .iter()
-            .map(|r| r.rule_id.as_str())
-            .collect();
+        let rule_ids: Vec<&str> = failing.iter().map(|r| r.rule_id.as_str()).collect();
         assert!(rule_ids.contains(&"watchllm-rule-secrets"));
         assert!(rule_ids.contains(&"watchllm-rule-imports"));
         assert!(rule_ids.contains(&"watchllm-rule-boundaries"));
@@ -237,7 +221,10 @@ mod tests {
             .iter()
             .filter(|r| r.status == "FAIL")
             .collect();
-        assert!(failing.len() >= 2, "shadow mode should preserve failing rules");
+        assert!(
+            failing.len() >= 2,
+            "shadow mode should preserve failing rules"
+        );
     }
 
     #[test]
@@ -256,7 +243,8 @@ mod tests {
 
     #[test]
     fn unsupported_language_returns_error_result() {
-        let result = evaluate_source_with_language_name("print('hello')", "python", None, ENFORCE_MODE);
+        let result =
+            evaluate_source_with_language_name("print('hello')", "python", None, ENFORCE_MODE);
 
         assert!(result.error.is_some());
         assert_eq!(result.exit_code(), 2);
@@ -265,7 +253,12 @@ mod tests {
     #[test]
     fn file_path_is_reflected_in_result() {
         let source = "const x = 1;";
-        let result = evaluate_source(source, SourceLanguage::TypeScript, Some("src/app.ts"), ENFORCE_MODE);
+        let result = evaluate_source(
+            source,
+            SourceLanguage::TypeScript,
+            Some("src/app.ts"),
+            ENFORCE_MODE,
+        );
 
         assert_eq!(result.file_path.as_deref(), Some("src/app.ts"));
     }
