@@ -66,8 +66,10 @@ jobs:
           cache-dependency-path: replay/package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Run tests and frontend build
+      - name: Run tests
         run: npm test
+      - name: Build frontend
+        run: npm run build:frontend
       - name: Audit dependencies
         run: npm audit --audit-level=high
 

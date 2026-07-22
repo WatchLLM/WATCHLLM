@@ -12,6 +12,30 @@ updates:
       github-actions:
         patterns: ["*"]
 
+  - package-ecosystem: github-actions
+    directory: /runtime
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:05"
+      timezone: UTC
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /klyd_harness_repo
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:10"
+      timezone: UTC
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        patterns: ["*"]
+
   - package-ecosystem: pip
     directory: /kernel
     schedule: &weekly

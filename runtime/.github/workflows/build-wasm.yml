@@ -34,5 +34,11 @@ jobs:
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
         with:
           targets: wasm32-unknown-unknown
+      - name: Install Clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y clang
       - name: Build Wasm crate
+        env:
+          CC_wasm32_unknown_unknown: clang
         run: cargo build --release --locked --target wasm32-unknown-unknown -p watchllm-wasm
