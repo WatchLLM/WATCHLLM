@@ -1,18 +1,13 @@
 version: "1.0.0"
 session_persistence: true
 routes:
-  - domain: api.example.com
+  - domain: api.twitter.com
     prover_mode: reclaim
-    sensitivity: high
-    session_ttl: 3600
-  - domain: example.org
+    sensitivity: low
+  - domain: secure.bank.com
     prover_mode: tlsnotary
-    sensitivity: medium
-    session_ttl: 900
-    metadata:
-      owner: example-team
+    sensitivity: high
+    session_ttl: 300
 aggregation:
-  batch_size: 100
-  timeout_seconds: 30
-metadata:
-  environment: development
+  batch_size: 10
+  timeout_seconds: 120

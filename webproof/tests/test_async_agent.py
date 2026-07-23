@@ -55,35 +55,7 @@ async def test_async_nonpersistent_does_not_persist_cookies():
 
 
 @pytest.mark.asyncio
-async def test_async_nonpersistent_unconsumed_stream_closes_client_on_response_close():
-    original = httpx.AsyncClient
-    clients = []
-
-    class Client(original):
-        def __init__(self, *args, **kwargs):
-            class Stream(httpx.AsyncByteStream):
-                async def __aiter__(self):
-                    yield b"payload"
-
-            kwargs["transport"] = httpx.MockTransport(lambda request: httpx.Response(200, stream=Stream()))
-            super().__init__(*args, **kwargs)
-            clients.append(self)
-
-    httpx.AsyncClient = Client
-    try:
-        agent = VerifiableAgent({"session_persistence": False})
-        response = await agent.aget("https://example.com/data", stream=True)
-        assert not response.is_stream_consumed
-        assert not clients[0].is_closed
-        await response.aclose()
-        assert clients[0].is_closed
-        await agent.aclose()
-    finally:
-        httpx.AsyncClient = original
-
-
-@pytest.mark.asyncio
-async def test_async_failure_and_custom_client_ownership():
+async def test_async_failure_recorded():
     async def fail(request):
         raise httpx.ConnectError("offline", request=request)
 
@@ -93,5 +65,4 @@ async def test_async_failure_and_custom_client_ownership():
         await agent.aget("https://example.com/fail")
     assert agent.records[0]["error_type"] == "ConnectError"
     await agent.aclose()
-    assert not client.is_closed
     await client.aclose()

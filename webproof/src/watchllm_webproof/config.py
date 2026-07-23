@@ -75,8 +75,8 @@ def _positive_number(value: Any, location: str, maximum: float) -> float:
 
 @dataclass(frozen=True, slots=True)
 class AggregationConfig:
-    batch_size: int = 100
-    timeout_seconds: float = 30.0
+    batch_size: int = 10
+    timeout_seconds: float = 120.0
     metadata: Mapping[str, Any] = field(default_factory=dict)
     options: Mapping[str, Any] = field(default_factory=dict)
 
@@ -86,7 +86,7 @@ class RouteConfig:
     domain: str
     prover_mode: str
     sensitivity: str
-    session_ttl: int
+    session_ttl: int | None = None
     metadata: Mapping[str, Any] = field(default_factory=dict)
     options: Mapping[str, Any] = field(default_factory=dict)
 
@@ -125,9 +125,9 @@ class WebProofConfig:
         aggregation_raw = _mapping(data.get("aggregation", {}), "aggregation")
         _unknown(aggregation_raw, {"batch_size", "timeout_seconds", "metadata", "options"}, "aggregation")
         aggregation = AggregationConfig(
-            batch_size=_positive_int(aggregation_raw.get("batch_size", 100), "aggregation.batch_size", _MAX_BATCH_SIZE),
+            batch_size=_positive_int(aggregation_raw.get("batch_size", 10), "aggregation.batch_size", _MAX_BATCH_SIZE),
             timeout_seconds=_positive_number(
-                aggregation_raw.get("timeout_seconds", 30), "aggregation.timeout_seconds", _MAX_TIMEOUT_SECONDS
+                aggregation_raw.get("timeout_seconds", 120), "aggregation.timeout_seconds", _MAX_TIMEOUT_SECONDS
             ),
             metadata=_extension_mapping(aggregation_raw.get("metadata", {}), "aggregation.metadata"),
             options=_extension_mapping(aggregation_raw.get("options", {}), "aggregation.options"),
@@ -152,11 +152,16 @@ class WebProofConfig:
             sensitivity = route_raw.get("sensitivity")
             if sensitivity not in _SENSITIVITY_VALUES or not isinstance(sensitivity, str):
                 raise ConfigError(f"{location}.sensitivity must be one of: high, low, medium")
+            session_ttl = None
+            if "session_ttl" in route_raw:
+                session_ttl = _positive_int(
+                    route_raw["session_ttl"], f"{location}.session_ttl", _MAX_SESSION_TTL
+                )
             routes.append(RouteConfig(
                 domain=domain,
                 prover_mode=prover_mode,
                 sensitivity=sensitivity,
-                session_ttl=_positive_int(route_raw.get("session_ttl"), f"{location}.session_ttl", _MAX_SESSION_TTL),
+                session_ttl=session_ttl,
                 metadata=_extension_mapping(route_raw.get("metadata", {}), f"{location}.metadata"),
                 options=_extension_mapping(route_raw.get("options", {}), f"{location}.options"),
             ))

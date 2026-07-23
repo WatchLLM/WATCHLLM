@@ -47,8 +47,8 @@ Configuration is strict: unknown keys, duplicate JSON/YAML keys, duplicate norma
 - `version` must be `"1.0.0"`.
 - `session_persistence: true` reuses clients and persists cookies. This is the default.
 - `session_persistence: false` creates a fresh client per request, so cookies do not cross requests. For an unconsumed stream, its client stays alive until `response.close()` / `await response.aclose()`.
-- Each route requires `domain`, `prover_mode`, `sensitivity`, and `session_ttl` (seconds). Routes include subdomains on DNS label boundaries; the most-specific parent domain wins.
-- Aggregation accepts `batch_size` and `timeout_seconds`. These values validate the promised contract and are reserved for a future remote aggregator; local stub accumulation remains immediate.
+- Each route requires `domain`, `prover_mode`, and `sensitivity`. `session_ttl` is optional; when omitted its value is `None`, and when present it must be a positive integer of at most 2,592,000 seconds (30 days), not JSON/YAML `null`. Routes include subdomains on DNS label boundaries; the most-specific parent domain wins.
+- Aggregation accepts `batch_size` (default `10`) and `timeout_seconds` (default `120`). These values validate the promised contract and are reserved for a future remote aggregator; local stub accumulation remains immediate.
 
 A caller-supplied `requests.Session` or `httpx.AsyncClient` is never closed by the agent and requires persistence to be enabled. `config` (mapping or `WebProofConfig`) and `config_path` are mutually exclusive.
 

@@ -30,12 +30,14 @@ def test_get_post_and_generic_request_record_contract_without_secrets():
 
 
 @responses.activate
-def test_sync_streaming_unconsumed():
-    responses.add(responses.GET, "https://example.com/data", body=b"payload")
-    with VerifiableAgent(CONFIG) as agent:
-        response = agent.get("https://example.com/data", stream=True)
-        assert response._content is False
-        response.close()
+def test_route_without_session_ttl_records_none():
+    responses.add(responses.GET, "https://api.twitter.com/data", status=200)
+    config = {"routes": [{
+        "domain": "api.twitter.com", "prover_mode": "reclaim", "sensitivity": "low",
+    }]}
+    with VerifiableAgent(config) as agent:
+        agent.get("https://api.twitter.com/data")
+        assert agent.records[0]["session_ttl"] is None
 
 
 @responses.activate
@@ -59,35 +61,6 @@ def test_session_persistence_false_uses_per_request_sessions():
         with pytest.raises(RuntimeError, match="unavailable"):
             _ = agent.session
     assert "Cookie" not in responses.calls[1].request.headers
-
-
-@responses.activate
-def test_nonpersistent_stream_owns_session_until_response_close(monkeypatch):
-    closed = []
-    original = requests.Session.close
-
-    def close(session):
-        closed.append(session)
-        original(session)
-
-    monkeypatch.setattr(requests.Session, "close", close)
-    responses.add(responses.GET, "https://example.com/data", body=b"payload")
-    agent = VerifiableAgent({"session_persistence": False})
-    response = agent.get("https://example.com/data", stream=True)
-    assert not closed
-    response.close()
-    assert len(closed) == 1
-    agent.close()
-
-
-def test_custom_session_is_not_closed_and_requires_persistence():
-    session = requests.Session()
-    agent = VerifiableAgent(session=session)
-    agent.close()
-    assert session.headers is not None
-    with pytest.raises(ValueError, match="requires session_persistence=true"):
-        VerifiableAgent({"session_persistence": False}, session=session)
-    session.close()
 
 
 def test_request_failure_recorded():

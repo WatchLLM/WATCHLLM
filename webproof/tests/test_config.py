@@ -12,21 +12,37 @@ def test_exact_json_sample_and_domain_routing():
     config = load_config(SAMPLE)
     assert config.version == "1.0.0"
     assert config.session_persistence is True
-    assert config.aggregation.batch_size == 100
-    assert config.aggregation.timeout_seconds == 30
+    assert config.aggregation.batch_size == 10
+    assert config.aggregation.timeout_seconds == 120
     agent = VerifiableAgent(config_path=SAMPLE)
-    route = agent.route_for("WWW.API.EXAMPLE.COM.")
-    assert route.domain == "api.example.com"
+    route = agent.route_for("WWW.API.TWITTER.COM.")
+    assert route.domain == "api.twitter.com"
     assert route.prover_mode == "reclaim"
-    assert route.sensitivity == "high"
-    assert route.session_ttl == 3600
+    assert route.sensitivity == "low"
+    assert route.session_ttl is None
+    bank_route = agent.route_for("secure.bank.com")
+    assert bank_route.prover_mode == "tlsnotary"
+    assert bank_route.sensitivity == "high"
+    assert bank_route.session_ttl == 300
     assert agent.route_for("notexample.com") is None
 
 
 def test_no_config_and_typed_or_mapping_config():
     assert VerifiableAgent().config == WebProofConfig()
+    assert WebProofConfig().aggregation.batch_size == 10
+    assert WebProofConfig().aggregation.timeout_seconds == 120
     assert VerifiableAgent(config={"session_persistence": False}).config.session_persistence is False
     assert VerifiableAgent(config=WebProofConfig()).config.version == "1.0.0"
+
+
+def test_session_ttl_upper_bound_is_accepted():
+    config = load_config({"routes": [{
+        "domain": "example.com",
+        "prover_mode": "reclaim",
+        "sensitivity": "low",
+        "session_ttl": 2_592_000,
+    }]})
+    assert config.routes[0].session_ttl == 2_592_000
 
 
 def test_config_path_conflicts_with_config():
@@ -51,7 +67,11 @@ def test_most_specific_parent_route_wins():
     ({"routes": [{"domain": "https://example.com", "prover_mode": "reclaim", "sensitivity": "high", "session_ttl": 1}]}, "domain"),
     ({"routes": [{"domain": "example.com", "prover_mode": "fake", "sensitivity": "high", "session_ttl": 1}]}, "reclaim, tlsnotary"),
     ({"routes": [{"domain": "example.com", "prover_mode": "reclaim", "sensitivity": "secret", "session_ttl": 1}]}, "high, low, medium"),
+    ({"routes": [{"domain": "example.com", "prover_mode": "reclaim", "sensitivity": "high", "session_ttl": None}]}, "session_ttl"),
+    ({"routes": [{"domain": "example.com", "prover_mode": "reclaim", "sensitivity": "high", "session_ttl": True}]}, "session_ttl"),
     ({"routes": [{"domain": "example.com", "prover_mode": "reclaim", "sensitivity": "high", "session_ttl": 0}]}, "session_ttl"),
+    ({"routes": [{"domain": "example.com", "prover_mode": "reclaim", "sensitivity": "high", "session_ttl": -1}]}, "session_ttl"),
+    ({"routes": [{"domain": "example.com", "prover_mode": "reclaim", "sensitivity": "high", "session_ttl": 2_592_001}]}, "session_ttl"),
     ({"aggregation": {"batch_size": True}}, "batch_size"),
     ({"aggregation": {"timeout_seconds": 0}}, "timeout_seconds"),
     ({"aggregation": {"surprise": 1}}, "unknown aggregation"),
