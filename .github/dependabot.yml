@@ -37,6 +37,20 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: pip
+    directory: /webproof
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
+    open-pull-requests-limit: 3
+    groups:
+      python-runtime:
+        dependency-type: production
+      python-development:
+        dependency-type: development
+
+  - package-ecosystem: pip
     directory: /kernel
     schedule:
       interval: weekly

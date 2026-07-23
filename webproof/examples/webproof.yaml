@@ -1,0 +1,14 @@
+version: 1
+aggregation:
+  enabled: true
+  algorithm: sha256-local-merkle-v1
+  metadata:
+    environment: development
+routes:
+  - hostname: api.example.com
+    prover: reclaim
+  - hostname: example.org
+    include_subdomains: true
+    prover: tlsnotary
+metadata:
+  owner: example-team
