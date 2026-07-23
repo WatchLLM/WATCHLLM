@@ -1,14 +1,18 @@
-version: 1
-aggregation:
-  enabled: true
-  algorithm: sha256-local-merkle-v1
-  metadata:
-    environment: development
+version: "1.0.0"
+session_persistence: true
 routes:
-  - hostname: api.example.com
-    prover: reclaim
-  - hostname: example.org
-    include_subdomains: true
-    prover: tlsnotary
+  - domain: api.example.com
+    prover_mode: reclaim
+    sensitivity: high
+    session_ttl: 3600
+  - domain: example.org
+    prover_mode: tlsnotary
+    sensitivity: medium
+    session_ttl: 900
+    metadata:
+      owner: example-team
+aggregation:
+  batch_size: 100
+  timeout_seconds: 30
 metadata:
-  owner: example-team
+  environment: development

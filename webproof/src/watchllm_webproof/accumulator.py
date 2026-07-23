@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from threading import Lock
 from typing import Any, Mapping
 
 
@@ -28,3 +29,33 @@ def merkle_root(records: list[Mapping[str, Any]]) -> str:
             for i in range(0, len(level), 2)
         ]
     return level[0].hex()
+
+
+class LocalMerkleAccumulator:
+    """Thread-safe state and proof generation for the explicitly local stub."""
+
+    def __init__(self) -> None:
+        self._records: list[dict[str, Any]] = []
+        self._lock = Lock()
+
+    def record(self, record: Mapping[str, Any]) -> None:
+        with self._lock:
+            self._records.append(dict(record))
+
+    @property
+    def records(self) -> tuple[Mapping[str, Any], ...]:
+        with self._lock:
+            return tuple(dict(record) for record in self._records)
+
+    def proof(self, session_id: str) -> dict[str, Any]:
+        records = list(self.records)
+        return {
+            "proof_type": "local_merkle_stub",
+            "proof_version": "1.0.0",
+            "attestation": False,
+            "algorithm": "sha256-local-merkle-v1",
+            "aggregation_enabled": True,
+            "merkle_root": merkle_root(records),
+            "leaf_count": len(records),
+            "session_id": session_id,
+        }

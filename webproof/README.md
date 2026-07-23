@@ -2,42 +2,59 @@
 
 Public Python SDK for recording privacy-minimized HTTP request outcomes and producing a deterministic local Merkle summary.
 
-> **Important:** `local_merkle_stub` is a local SHA-256 accumulator, not a TLS proof, remote-data proof, or cryptographic attestation. `reclaim` and `tlsnotary` route modes are declarative metadata only in this release. No private proof engine is included.
+> **Important:** `local_merkle_stub` is a local, non-attesting SHA-256 accumulator. It is **not** a TLS proof, remote-data proof, or cryptographic attestation. `reclaim` and `tlsnotary` values are declarative routing metadata only; this package contains no proof engine.
 
-## Install and use
+## Quickstart
 
 ```bash
 pip install watchllm-webproof
-watchllm verify-url https://api.example.com/health --config webproof.yaml
+watchllm verify-url https://api.example.com/health --config config.json
+# --config is optional:
+watchllm verify-url https://api.example.com/health
 ```
 
 ```python
 from watchllm_webproof import VerifiableAgent
 
-with VerifiableAgent("webproof.yaml") as agent:
+# No configuration is required.
+with VerifiableAgent() as agent:
     response = agent.get("https://api.example.com/health", stream=True)
     print(agent.proof())
     response.close()
+
+# JSON is the primary configuration format.
+with VerifiableAgent(config_path="config.json") as agent:
+    response = agent.post("https://api.example.com/events", json={"ok": True})
 ```
 
-Async requests use the same recorder and an `httpx.AsyncClient`:
+Async and generic requests are also available:
 
 ```python
-async with VerifiableAgent("webproof.yaml") as agent:
-    response = await agent.aget("https://example.org/data", stream=True)
+async with VerifiableAgent(config_path="config.json") as agent:
+    response = await agent.apost("https://example.org/data", json={"value": 1}, stream=True)
     await response.aclose()
-    print(agent.proof())
+    other = await agent.arequest("DELETE", "https://example.org/data/1")
 ```
 
-Only HTTP and HTTPS are supported. The SDK never records headers, cookies, request/response bodies, URL credentials, or query strings. It records method, normalized host, effective port, path, status/error type, and selected declarative prover mode. It does not eagerly inspect response bodies, so explicit streaming remains streaming.
+`get`, `post`, and `request` use `requests`; `aget`, `apost`, and `arequest` use `httpx`. Only HTTP and HTTPS are supported. The SDK never records headers, cookies, request/response bodies, URL credentials, or query strings. It records method, normalized domain, effective port, path, status/error type, and selected route metadata. Explicit streaming is never eagerly consumed.
 
 ## Configuration
 
-See [`examples/webproof.yaml`](examples/webproof.yaml). Configuration is strict: unknown or duplicate keys and invalid types are rejected. `metadata` mappings are the forward-extension points. Host routing is case-insensitive and IDNA-normalized. Exact routes win; an `include_subdomains` route matches only label-boundary subdomains, and the most specific parent wins.
+See [`examples/webproof.json`](examples/webproof.json) for the exact JSON contract. YAML remains supported for convenience; see [`examples/webproof.yaml`](examples/webproof.yaml).
+
+Configuration is strict: unknown keys, duplicate JSON/YAML keys, duplicate normalized domains, invalid types, unsupported sensitivity values, and out-of-range TTL/aggregation values are rejected. `metadata` and `options` mappings are explicit extension points and are preserved rather than interpreted or silently discarded.
+
+- `version` must be `"1.0.0"`.
+- `session_persistence: true` reuses clients and persists cookies. This is the default.
+- `session_persistence: false` creates a fresh client per request, so cookies do not cross requests. For an unconsumed stream, its client stays alive until `response.close()` / `await response.aclose()`.
+- Each route requires `domain`, `prover_mode`, `sensitivity`, and `session_ttl` (seconds). Routes include subdomains on DNS label boundaries; the most-specific parent domain wins.
+- Aggregation accepts `batch_size` and `timeout_seconds`. These values validate the promised contract and are reserved for a future remote aggregator; local stub accumulation remains immediate.
+
+A caller-supplied `requests.Session` or `httpx.AsyncClient` is never closed by the agent and requires persistence to be enabled. `config` (mapping or `WebProofConfig`) and `config_path` are mutually exclusive.
 
 ## Proof contract
 
-`proof()` always includes `merkle_root`, `leaf_count`, and `session_id`, plus version/type metadata. With aggregation disabled, `merkle_root` is `null`. An empty enabled session has the conventional SHA-256 digest of empty bytes. Records are deterministic for the same request outcomes; timestamps are intentionally excluded.
+`proof()` preserves these keys: `proof_type`, `proof_version`, `attestation`, `algorithm`, `aggregation_enabled`, `merkle_root`, `leaf_count`, and `session_id`. `attestation` is always `false` in this local stub. An empty session has the conventional SHA-256 digest of empty bytes. Records are deterministic for the same request outcomes; timestamps are intentionally excluded.
 
 ## Development
 
