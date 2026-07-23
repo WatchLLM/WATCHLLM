@@ -4,7 +4,7 @@ Closed-source Cloudflare Worker that **ingests and anchors commitments**. Curren
 
 ## API and storage flow
 
-`POST /proof` (Bearer `key_id.secret`) validates the strict v1 envelope, Rust-domain Merkle path, and ≤1 MiB decoded canonical base64 payload. It reserves the unique root in D1, writes bytes to R2, then queues only a small pointer. Success is `202` with `queued` (or current idempotent state), nullable tx hash, and commitment semantics. Same-root immutable conflicts return `409`. `GET /proof/:verification_id` reports `queued | processing | submitted | anchored | failed`.
+`POST /proof` (Bearer `key_id.secret`) validates the strict envelope v1 carrying Rust proof version `1.0.0`, Rust-domain Merkle path, and ≤1 MiB decoded canonical base64 payload. It reserves the unique root in D1, writes bytes to R2, then queues only a small pointer. Success is `202` with `queued` (or current idempotent state), nullable L2 transaction hash, and commitment semantics. Same-root immutable conflicts return `409`. `GET /proof/:verification_id` reports `queued | processing | submitted | anchored | failed`.
 
 Hashes accept prefixed/unprefixed 32-byte hex and canonicalize lowercase `0x`. Path direction follows leaf-index bits and historical node domain `watchllm-webproof-local-node-v1\0`. A sibling path cannot independently establish odd-level duplication context.
 
@@ -12,7 +12,7 @@ D1 is authoritative. R2/Queue failures mark a retryable failed reservation; queu
 
 ## Chain and retries
 
-Base Sepolia (`84532`) defaults; Base mainnet (`8453`) is explicit. The viem adapter estimates EIP-1559 gas/fees immediately before signing real `anchor(bytes32)` calldata. Missing/placeholder contract, key, or chain mismatch fails closed. Fee ceilings defer with Queue exponential backoff+jitter. Signed hash+nonce persist before raw broadcast; uncertain broadcasts are reconciled, never blindly replaced. Configured confirmations are required for `anchored`. RPC fallback never switches chains. Single-root transactions are v1; production economics require epoch super-root batching.
+Base Sepolia (`84532`) defaults; Base mainnet (`8453`) is explicit. The viem adapter estimates EIP-1559 gas/fees immediately before signing real `anchor(bytes32)` calldata. Missing/placeholder contract, key, or chain mismatch fails closed. Execution-fee ceilings defer with Queue exponential backoff+jitter. Signed hash+nonce persist before raw broadcast; uncertain broadcasts are reconciled, never blindly replaced. Configured confirmations are required for `anchored`. RPC fallback never switches chains. Single-root transactions are v1; production economics require epoch super-root batching.
 
 ## Setup (instructions only)
 
@@ -26,3 +26,9 @@ npx wrangler secret put EVM_PRIVATE_KEY
 Provision `key_id.secret` offline: random 16-byte lowercase-hex salt, with D1 digest BLOB `HMAC-SHA256(API_KEY_PEPPER, salt + NUL + secret)`. Never store/log tokens. A separately reviewed deployed anchor contract is required; no address is invented here.
 
 Run `npm ci && npm test && npm run typecheck && npm run lint && npm run check:schema && npm run dry-run && npm audit --audit-level=high`. Actual deployment/resources/transactions require explicit approval. Broad production also requires a real verifier, batching, and signer KMS/HSM hardening.
+
+The fee ceiling is execution-only (`gas × maxFeePerGas`); Base L1 data fee is not exposed by the pre-signing estimator and is therefore not claimed as covered. RPC fallback has zero retries and transaction broadcast is invoked once; uncertain broadcast is reconciled by persisted hash.
+
+Every batch is owned by the authenticated `key_id`; status lookup requires that same owner. A root is globally unique, and cross-owner duplicate submission returns a generic conflict without cached-state disclosure. Anchor consumers use an atomic expiring D1 lease; only the lease holder may persist a signed hash, and broadcast is forbidden unless that conditional persistence changes exactly one row. A stale lease is reclaimable, while any persisted transaction is receipt-reconciled rather than replaced.
+
+The D1 `batch()` reservation writes the batch and leaf together atomically. Queue send success followed by a D1 status-write failure is still a durable handoff: the response reports queued and the consumer can claim the processing row. Queue-send failure removes the R2 object when possible; if deletion itself fails, bucket lifecycle/orphan reconciliation by digest is the documented cleanup boundary.
