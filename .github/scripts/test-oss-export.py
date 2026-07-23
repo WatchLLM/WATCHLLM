@@ -118,6 +118,10 @@ class OSSExportTests(unittest.TestCase):
             "webproof/tests/test_agent.py": "# public tests",
             "webproof/engine/Cargo.toml": "[package]\nname='watchllm-webproof-engine'\n",
             "webproof/engine/src/lib.rs": "// public local non-attesting commitment engine",
+            "webproof/edge/src/index.ts": "// PRIVATE EDGE WORKER",
+            "webproof/edge/src/auth.ts": "// PRIVATE EDGE AUTH",
+            "webproof/edge/schema.sql": "-- PRIVATE EDGE SCHEMA",
+            "webproof/edge/package.json": '{"private":true}',
             "webproof/engine/prover/remote.rs": "// PRIVATE REMOTE PROVER",
             "webproof/engine/verifier/remote.rs": "// PRIVATE REMOTE VERIFIER",
             "webproof/engine/attestation/tls.rs": "// PRIVATE ATTESTATION",
@@ -190,6 +194,7 @@ vscode/path
 **/.vscodeignore
 **/.vsix
 kernel/.watchllm/logs/**
+webproof/edge/**
 webproof/engine/prover/**
 webproof/engine/verifier/**
 webproof/engine/attestation/**
@@ -837,6 +842,10 @@ webproof/src/watchllm_webproof/private/**
             self.assertIn(public_file, files)
 
         for private_file in (
+            "webproof/edge/src/index.ts",
+            "webproof/edge/src/auth.ts",
+            "webproof/edge/schema.sql",
+            "webproof/edge/package.json",
             "webproof/engine/prover/remote.rs",
             "webproof/engine/verifier/remote.rs",
             "webproof/engine/attestation/tls.rs",

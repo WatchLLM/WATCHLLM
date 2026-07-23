@@ -1,0 +1,31 @@
+{
+  "name": "@watchllm/webproof-edge-private",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test --max-warnings=0",
+    "check:schema": "node scripts/check-schema.mjs",
+    "dry-run": "wrangler deploy --dry-run --outdir /tmp/watchllm-webproof-edge-dry-run"
+  },
+  "dependencies": {
+    "viem": "2.55.8"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260723.1",
+    "@eslint/js": "9.31.0",
+    "eslint": "9.31.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.65.0",
+    "vitest": "4.1.10",
+    "wrangler": "4.113.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "overrides": {
+    "sharp": "0.35.0"
+  }
+}

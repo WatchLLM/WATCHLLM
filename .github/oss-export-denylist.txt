@@ -34,6 +34,7 @@ kernel/.watchllm/logs/**
 # WebProof's local, non-attesting Rust commitment engine is public. Future
 # remote prover, verifier, attestation, key, and private implementation trees
 # must never cross the open-source boundary.
+webproof/edge/**
 webproof/engine/prover/**
 webproof/engine/verifier/**
 webproof/engine/attestation/**
