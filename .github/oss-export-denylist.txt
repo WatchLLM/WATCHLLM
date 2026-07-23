@@ -31,13 +31,18 @@ kernel/openclaw.txt
 vscode/path
 kernel/.watchllm/logs/**
 
-# WebProof's public SDK is exportable, but proof engines and private
-# implementations must never cross the open-source boundary.
-webproof/engine/**
+# WebProof's local, non-attesting Rust commitment engine is public. Future
+# remote prover, verifier, attestation, key, and private implementation trees
+# must never cross the open-source boundary.
+webproof/engine/prover/**
+webproof/engine/verifier/**
+webproof/engine/attestation/**
+webproof/engine/private/**
 webproof/private/**
-webproof/src/watchllm_webproof/engine/**
+webproof/src/watchllm_webproof/prover/**
+webproof/src/watchllm_webproof/verifier/**
+webproof/src/watchllm_webproof/attestation/**
 webproof/src/watchllm_webproof/private/**
-webproof/src/watchllm_webproof/_engine/**
 
 # IDE / tooling (never public)
 **/.vscode/**

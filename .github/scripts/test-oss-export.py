@@ -111,16 +111,22 @@ class OSSExportTests(unittest.TestCase):
             "examples/AUDIT.md": "INTERNAL AUDIT",
             "examples/tasks.md": "INTERNAL TASKS",
 
-            # Public WebProof SDK and forbidden future proof-engine paths
+            # Public WebProof SDK/local commitment engine and forbidden future prover paths
             "webproof/pyproject.toml": "[project]\nname='watchllm-webproof'\n",
             "webproof/src/watchllm_webproof/__init__.py": "from .agent import VerifiableAgent",
             "webproof/src/watchllm_webproof/agent.py": "# public SDK",
             "webproof/tests/test_agent.py": "# public tests",
-            "webproof/engine/prover.py": "# PRIVATE PROOF ENGINE",
+            "webproof/engine/Cargo.toml": "[package]\nname='watchllm-webproof-engine'\n",
+            "webproof/engine/src/lib.rs": "// public local non-attesting commitment engine",
+            "webproof/engine/prover/remote.rs": "// PRIVATE REMOTE PROVER",
+            "webproof/engine/verifier/remote.rs": "// PRIVATE REMOTE VERIFIER",
+            "webproof/engine/attestation/tls.rs": "// PRIVATE ATTESTATION",
+            "webproof/engine/private/keys.rs": "// PRIVATE",
             "webproof/private/keys.py": "# PRIVATE",
-            "webproof/src/watchllm_webproof/engine/prover.py": "# PRIVATE ENGINE",
+            "webproof/src/watchllm_webproof/prover/remote.py": "# PRIVATE PROVER",
+            "webproof/src/watchllm_webproof/verifier/remote.py": "# PRIVATE VERIFIER",
+            "webproof/src/watchllm_webproof/attestation/tls.py": "# PRIVATE ATTESTATION",
             "webproof/src/watchllm_webproof/private/secrets.py": "# PRIVATE",
-            "webproof/src/watchllm_webproof/_engine/native.py": "# PRIVATE ENGINE",
 
             # Metadata — these must be tracked
             "CHANGELOG.md": "# Changelog",
@@ -184,11 +190,15 @@ vscode/path
 **/.vscodeignore
 **/.vsix
 kernel/.watchllm/logs/**
-webproof/engine/**
+webproof/engine/prover/**
+webproof/engine/verifier/**
+webproof/engine/attestation/**
+webproof/engine/private/**
 webproof/private/**
-webproof/src/watchllm_webproof/engine/**
+webproof/src/watchllm_webproof/prover/**
+webproof/src/watchllm_webproof/verifier/**
+webproof/src/watchllm_webproof/attestation/**
 webproof/src/watchllm_webproof/private/**
-webproof/src/watchllm_webproof/_engine/**
 """,
 
             # Proprietary files (NOT in allowlist)
@@ -807,8 +817,8 @@ webproof/src/watchllm_webproof/_engine/**
         self.assertNotEqual(rc, 0)
         self.assertIn("has no tracked files", stderr + stdout)
 
-    def test_24_webproof_sdk_exported_without_private_engine(self):
-        """Public WebProof SDK exports while current/future private engine trees do not."""
+    def test_24_webproof_sdk_and_commitment_engine_export_without_private_provers(self):
+        """Public local commitment code exports while remote proof implementations do not."""
         self.build_fixture_repo()
         target = os.path.join(self.temp_root, "target-webproof-boundary")
         os.makedirs(target, exist_ok=True)
@@ -821,15 +831,21 @@ webproof/src/watchllm_webproof/_engine/**
             "webproof/src/watchllm_webproof/__init__.py",
             "webproof/src/watchllm_webproof/agent.py",
             "webproof/tests/test_agent.py",
+            "webproof/engine/Cargo.toml",
+            "webproof/engine/src/lib.rs",
         ):
             self.assertIn(public_file, files)
 
         for private_file in (
-            "webproof/engine/prover.py",
+            "webproof/engine/prover/remote.rs",
+            "webproof/engine/verifier/remote.rs",
+            "webproof/engine/attestation/tls.rs",
+            "webproof/engine/private/keys.rs",
             "webproof/private/keys.py",
-            "webproof/src/watchllm_webproof/engine/prover.py",
+            "webproof/src/watchllm_webproof/prover/remote.py",
+            "webproof/src/watchllm_webproof/verifier/remote.py",
+            "webproof/src/watchllm_webproof/attestation/tls.py",
             "webproof/src/watchllm_webproof/private/secrets.py",
-            "webproof/src/watchllm_webproof/_engine/native.py",
         ):
             self.assertNotIn(private_file, files)
 

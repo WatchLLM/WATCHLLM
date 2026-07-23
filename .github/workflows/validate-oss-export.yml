@@ -21,6 +21,7 @@ on:
       - 'schemas/**'
       - 'vscode/**'
       - 'examples/**'
+      - 'webproof/**'
   push:
     branches:
       - main
@@ -43,6 +44,7 @@ on:
       - 'schemas/**'
       - 'vscode/**'
       - 'examples/**'
+      - 'webproof/**'
 
 permissions:
   contents: read
@@ -151,7 +153,7 @@ jobs:
           find /tmp/oss-validate-target-live -type f -not -path '*/.git/*' | sort
           echo ""
           echo "Verifying expected allowlisted directories present..."
-          for dir in kernel schemas vscode examples; do
+          for dir in kernel schemas vscode examples webproof; do
             if [[ -d "/tmp/oss-validate-target-live/$dir" ]]; then
               echo "  OK: $dir/ exists"
             else
