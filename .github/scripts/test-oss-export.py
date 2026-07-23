@@ -111,6 +111,17 @@ class OSSExportTests(unittest.TestCase):
             "examples/AUDIT.md": "INTERNAL AUDIT",
             "examples/tasks.md": "INTERNAL TASKS",
 
+            # Public WebProof SDK and forbidden future proof-engine paths
+            "webproof/pyproject.toml": "[project]\nname='watchllm-webproof'\n",
+            "webproof/src/watchllm_webproof/__init__.py": "from .agent import VerifiableAgent",
+            "webproof/src/watchllm_webproof/agent.py": "# public SDK",
+            "webproof/tests/test_agent.py": "# public tests",
+            "webproof/engine/prover.py": "# PRIVATE PROOF ENGINE",
+            "webproof/private/keys.py": "# PRIVATE",
+            "webproof/src/watchllm_webproof/engine/prover.py": "# PRIVATE ENGINE",
+            "webproof/src/watchllm_webproof/private/secrets.py": "# PRIVATE",
+            "webproof/src/watchllm_webproof/_engine/native.py": "# PRIVATE ENGINE",
+
             # Metadata — these must be tracked
             "CHANGELOG.md": "# Changelog",
             "CONTRIBUTING.md": "# Contributing",
@@ -144,6 +155,7 @@ kernel/
 schemas/
 vscode/
 examples/
+webproof/
 CHANGELOG.md
 CONTRIBUTING.md
 .github/CODEOWNERS
@@ -172,6 +184,11 @@ vscode/path
 **/.vscodeignore
 **/.vsix
 kernel/.watchllm/logs/**
+webproof/engine/**
+webproof/private/**
+webproof/src/watchllm_webproof/engine/**
+webproof/src/watchllm_webproof/private/**
+webproof/src/watchllm_webproof/_engine/**
 """,
 
             # Proprietary files (NOT in allowlist)
@@ -789,6 +806,32 @@ kernel/.watchllm/logs/**
         )
         self.assertNotEqual(rc, 0)
         self.assertIn("has no tracked files", stderr + stdout)
+
+    def test_24_webproof_sdk_exported_without_private_engine(self):
+        """Public WebProof SDK exports while current/future private engine trees do not."""
+        self.build_fixture_repo()
+        target = os.path.join(self.temp_root, "target-webproof-boundary")
+        os.makedirs(target, exist_ok=True)
+
+        self._export(target=target)
+        files = self._list_target_files(target)
+
+        for public_file in (
+            "webproof/pyproject.toml",
+            "webproof/src/watchllm_webproof/__init__.py",
+            "webproof/src/watchllm_webproof/agent.py",
+            "webproof/tests/test_agent.py",
+        ):
+            self.assertIn(public_file, files)
+
+        for private_file in (
+            "webproof/engine/prover.py",
+            "webproof/private/keys.py",
+            "webproof/src/watchllm_webproof/engine/prover.py",
+            "webproof/src/watchllm_webproof/private/secrets.py",
+            "webproof/src/watchllm_webproof/_engine/native.py",
+        ):
+            self.assertNotIn(private_file, files)
 
 
 def run_with_real_repo():

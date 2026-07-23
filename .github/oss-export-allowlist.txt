@@ -24,6 +24,7 @@ kernel/
 schemas/
 vscode/
 examples/
+webproof/
 
 # Public Metadata (source of truth in private repo)
 CHANGELOG.md
