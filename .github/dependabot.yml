@@ -50,6 +50,18 @@ updates:
       python-development:
         dependency-type: development
 
+  - package-ecosystem: cargo
+    directory: /webproof/engine
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:15"
+      timezone: UTC
+    open-pull-requests-limit: 3
+    groups:
+      rust-dependencies:
+        patterns: ["*"]
+
   - package-ecosystem: pip
     directory: /kernel
     schedule:
