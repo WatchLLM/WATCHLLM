@@ -24,6 +24,7 @@ function migrate(db) {
       merkle_root TEXT NOT NULL, merkle_path TEXT NOT NULL, response_hash TEXT NOT NULL,
       chain TEXT NOT NULL, tx_hash TEXT, confirmations INTEGER NOT NULL DEFAULT 0,
       required_confirmations INTEGER NOT NULL DEFAULT 0, raw_proof TEXT,
+      immutable_snapshot TEXT,
       worker_updated_at INTEGER, refreshed_at INTEGER, created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
@@ -37,6 +38,15 @@ function migrate(db) {
     CREATE INDEX IF NOT EXISTS idx_webproof_session_order ON webproof_proofs(session_id, observed_at DESC, id ASC);
     CREATE INDEX IF NOT EXISTS idx_step_proofs_run_step ON step_proofs(run_id, step_id);
   `);
+  const columns = new Set(db.prepare('PRAGMA table_info(webproof_proofs)').all().map((column) => column.name));
+  if (!columns.has('immutable_snapshot')) db.exec('ALTER TABLE webproof_proofs ADD COLUMN immutable_snapshot TEXT');
+  const backfill = db.prepare('UPDATE webproof_proofs SET immutable_snapshot=? WHERE id=?');
+  for (const row of db.prepare('SELECT * FROM webproof_proofs WHERE immutable_snapshot IS NULL AND raw_proof IS NOT NULL').all()) {
+    try {
+      const proof = JSON.parse(row.raw_proof);
+      backfill.run(immutableSnapshot(proof, proof.leaf_data || {}, Number(proof.leaf_data?.timestamp)), row.id);
+    } catch { /* A truncated legacy snapshot cannot safely claim an immutable identity. */ }
+  }
 }
 
 function normalizeHash(value, field) {
@@ -78,6 +88,43 @@ function boundedRaw(value) {
   if (Buffer.byteLength(text) > MAX_RAW) text = `${Buffer.from(text).subarray(0, MAX_RAW).toString('utf8')}\n…[TRUNCATED]`;
   return text;
 }
+function stableValue(value) {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map((key) => [key, stableValue(value[key])]));
+  return value;
+}
+// A verification ID names one immutable snapshot. Its identity is all accepted,
+// redacted proof content except Worker-refreshed lifecycle fields. Known hashes
+// and defaults are canonicalized so equivalent wire encodings remain idempotent.
+function immutableSnapshot(p, target, observed) {
+  const snapshot = redact(p);
+  for (const field of ['status', 'l2_transaction_hash', 'confirmations', 'required_confirmations', 'updated_at', 'worker_updated_at', 'refreshed_at']) delete snapshot[field];
+  Object.assign(snapshot, {
+    verification_id: p.verification_id,
+    session_id: p.session_id,
+    proof_type: 'local_merkle_stub',
+    proof_version: p.proof_version || '1.0.0',
+    verification_mode: 'commitment_only',
+    attestation: false,
+    leaf_hash: normalizeHash(p.leaf_hash, 'leaf_hash'),
+    leaf_index: p.leaf_index,
+    merkle_root: normalizeHash(p.merkle_root, 'merkle_root'),
+    merkle_path: p.merkle_path.map((hash, index) => normalizeHash(hash, `merkle_path[${index}]`)),
+    chain: p.chain,
+    leaf_data: {
+      ...redact(target),
+      target_domain: target.target_domain,
+      path: target.path,
+      response_hash: normalizeHash(target.response_hash, 'response_hash'),
+      timestamp: observed,
+    },
+  });
+  return JSON.stringify(stableValue(snapshot));
+}
+function sameSnapshot(left, right) {
+  return typeof left === 'string' && left.length === right.length && crypto.timingSafeEqual(Buffer.from(left), Buffer.from(right));
+}
+function conflict() { return input('proof snapshot conflicts with existing verification id', 409); }
 function validateRecord(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw input('body must be an object');
   const p = body.proof;
@@ -144,13 +191,18 @@ function createProofExtension({ db, fetchImpl = globalThis.fetch, env = process.
   function mount(app) {
     app.post('/api/internal/proofs/snapshot', (req, res, next) => { try {
       constantToken(req, options.ingestToken); const { p, target, observed } = validateRecord(req.body); const now = Date.now();
+      const snapshot = immutableSnapshot(p, target, observed);
       const runId = req.body.run_id; const stepId = req.body.step_id;
       if ((runId == null) !== (stepId == null)) throw input('run_id and step_id must be supplied together');
       if (runId != null && (!RUN_RE.test(runId) || !RUN_RE.test(stepId))) throw input('invalid run or step id');
       const transaction = db.transaction(() => {
-        db.prepare(`INSERT INTO webproof_proofs(id,session_id,target_domain,target_path,observed_at,status,verification_mode,attestation,proof_type,proof_version,leaf_hash,leaf_index,merkle_root,merkle_path,response_hash,chain,tx_hash,confirmations,required_confirmations,raw_proof,worker_updated_at,refreshed_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING`).run(p.verification_id,p.session_id,target.target_domain,target.path,observed,p.status||'queued','commitment_only',0,'local_merkle_stub',p.proof_version||'1.0.0',normalizeHash(p.leaf_hash,'leaf_hash'),p.leaf_index,normalizeHash(p.merkle_root,'merkle_root'),JSON.stringify(p.merkle_path.map((h,i)=>normalizeHash(h,`merkle_path[${i}]`))),normalizeHash(target.response_hash,'response_hash'),p.chain,p.l2_transaction_hash||null,p.confirmations||0,p.required_confirmations||0,boundedRaw(p),null,null,now,now);
+        const existing = db.prepare('SELECT immutable_snapshot FROM webproof_proofs WHERE id=?').get(p.verification_id);
+        if (existing && !sameSnapshot(existing.immutable_snapshot, snapshot)) throw conflict();
+        if (!existing) db.prepare(`INSERT INTO webproof_proofs(id,session_id,target_domain,target_path,observed_at,status,verification_mode,attestation,proof_type,proof_version,leaf_hash,leaf_index,merkle_root,merkle_path,response_hash,chain,tx_hash,confirmations,required_confirmations,raw_proof,immutable_snapshot,worker_updated_at,refreshed_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(p.verification_id,p.session_id,target.target_domain,target.path,observed,p.status||'queued','commitment_only',0,'local_merkle_stub',p.proof_version||'1.0.0',normalizeHash(p.leaf_hash,'leaf_hash'),p.leaf_index,normalizeHash(p.merkle_root,'merkle_root'),JSON.stringify(p.merkle_path.map((h,i)=>normalizeHash(h,`merkle_path[${i}]`))),normalizeHash(target.response_hash,'response_hash'),p.chain,p.l2_transaction_hash||null,p.confirmations||0,p.required_confirmations||0,boundedRaw(p),snapshot,null,null,now,now);
         if (runId != null) {
           const owner = db.prepare('SELECT 1 FROM steps WHERE id=? AND run_id=?').get(stepId, runId); if (!owner) throw input('step does not belong to run');
+          const associatedRun = db.prepare('SELECT run_id FROM step_proofs WHERE proof_id=? LIMIT 1').get(p.verification_id);
+          if (associatedRun && associatedRun.run_id !== runId) throw conflict();
           db.prepare('INSERT OR IGNORE INTO step_proofs(run_id,step_id,proof_id,created_at) VALUES(?,?,?,?)').run(runId,stepId,p.verification_id,now);
         }
       }); transaction(); noStore(res); res.status(201).json({ proof: mapRow(db.prepare('SELECT * FROM webproof_proofs WHERE id=?').get(p.verification_id), options.staleMs, true) });
