@@ -22,6 +22,7 @@ on:
       - 'vscode/**'
       - 'examples/**'
       - 'webproof/**'
+      - 'replay/**'
   push:
     branches:
       - main
@@ -45,6 +46,7 @@ on:
       - 'vscode/**'
       - 'examples/**'
       - 'webproof/**'
+      - 'replay/**'
 
 permissions:
   contents: read
@@ -62,7 +64,6 @@ jobs:
           ALLOWLIST=".github/oss-export-allowlist.txt"
           PROPRIETARY_PATTERNS=(
             "^runtime/"
-            "^replay/"
             "^reliability/"
             "^klyd/"
             "^klyd_harness_repo/"
@@ -153,7 +154,7 @@ jobs:
           find /tmp/oss-validate-target-live -type f -not -path '*/.git/*' | sort
           echo ""
           echo "Verifying expected allowlisted directories present..."
-          for dir in kernel schemas vscode examples webproof; do
+          for dir in kernel schemas vscode examples webproof replay; do
             if [[ -d "/tmp/oss-validate-target-live/$dir" ]]; then
               echo "  OK: $dir/ exists"
             else

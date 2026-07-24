@@ -1,0 +1,31 @@
+name: Private Replay WebProof
+on:
+  pull_request:
+    paths:
+      - 'replay/**'
+      - '.github/workflows/replay-private.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'replay/**'
+      - '.github/workflows/replay-private.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: replay
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: replay/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npx --no-install vite build --config src/webproof-private/vite.config.ts
+      - run: npm audit --audit-level=high

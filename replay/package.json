@@ -11,7 +11,8 @@
     "start:backend": "node src/server/index.cjs",
     "dev:frontend": "vite --host 0.0.0.0",
     "build:frontend": "vite build",
-    "preview:frontend": "vite preview"
+    "preview:frontend": "vite preview",
+    "typecheck": "tsc -p src/client/tsconfig.json --noEmit"
   },
   "keywords": [
     "watchllm",
@@ -22,11 +23,12 @@
   "author": "WatchLLM",
   "license": "Apache-2.0",
   "dependencies": {
+    "@react-pdf/renderer": "^4.3.1",
     "better-sqlite3": "^11.9.1",
     "express": "^4.18.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.1",
+    "react-router-dom": "^7.18.1",
     "reactflow": "^11.11.4"
   },
   "devDependencies": {

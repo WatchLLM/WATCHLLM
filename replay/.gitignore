@@ -9,3 +9,4 @@ data/*.sqlite
 data/*.sqlite-*
 src/client/dist/
 .aider.conf.yml
+.private-build/
