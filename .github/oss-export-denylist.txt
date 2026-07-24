@@ -45,6 +45,11 @@ webproof/src/watchllm_webproof/verifier/**
 webproof/src/watchllm_webproof/attestation/**
 webproof/src/watchllm_webproof/private/**
 
+# Replay's execution viewer remains open-core. The WebProof dashboard and its
+# integration bridge are private and must never be exported or bundled into a
+# tracked public dist tree (all dist output is independently denied above).
+replay/src/webproof-private/**
+
 # IDE / tooling (never public)
 **/.vscode/**
 **/.idea/**

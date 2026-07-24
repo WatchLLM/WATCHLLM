@@ -25,6 +25,7 @@ schemas/
 vscode/
 examples/
 webproof/
+replay/
 
 # Public Metadata (source of truth in private repo)
 CHANGELOG.md

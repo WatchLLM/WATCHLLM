@@ -132,6 +132,15 @@ class OSSExportTests(unittest.TestCase):
             "webproof/src/watchllm_webproof/attestation/tls.py": "# PRIVATE ATTESTATION",
             "webproof/src/watchllm_webproof/private/secrets.py": "# PRIVATE",
 
+            # Public Replay application and private WebProof dashboard extension
+            "replay/package.json": '{"name":"watchllm-replay"}',
+            "replay/src/server/index.cjs": "// public replay server",
+            "replay/src/client/src/App.tsx": "// public replay client",
+            "replay/test/query-api.test.cjs": "// public replay tests",
+            "replay/src/webproof-private/server/router.cjs": "// PRIVATE WEBPROOF ROUTER",
+            "replay/src/webproof-private/client/ProofsList.tsx": "// PRIVATE WEBPROOF UI",
+            "replay/src/webproof-private/test/proofs-api.test.cjs": "// PRIVATE WEBPROOF TESTS",
+
             # Metadata — these must be tracked
             "CHANGELOG.md": "# Changelog",
             "CONTRIBUTING.md": "# Contributing",
@@ -166,6 +175,7 @@ schemas/
 vscode/
 examples/
 webproof/
+replay/
 CHANGELOG.md
 CONTRIBUTING.md
 .github/CODEOWNERS
@@ -204,6 +214,7 @@ webproof/src/watchllm_webproof/prover/**
 webproof/src/watchllm_webproof/verifier/**
 webproof/src/watchllm_webproof/attestation/**
 webproof/src/watchllm_webproof/private/**
+replay/src/webproof-private/**
 """,
 
             # Proprietary files (NOT in allowlist)
@@ -855,6 +866,30 @@ webproof/src/watchllm_webproof/private/**
             "webproof/src/watchllm_webproof/verifier/remote.py",
             "webproof/src/watchllm_webproof/attestation/tls.py",
             "webproof/src/watchllm_webproof/private/secrets.py",
+        ):
+            self.assertNotIn(private_file, files)
+
+    def test_25_public_replay_exports_without_private_webproof_dashboard(self):
+        """Public Replay remains exportable while its private extension never crosses."""
+        self.build_fixture_repo()
+        target = os.path.join(self.temp_root, "target-replay-boundary")
+        os.makedirs(target, exist_ok=True)
+
+        self._export(target=target)
+        files = self._list_target_files(target)
+
+        for public_file in (
+            "replay/package.json",
+            "replay/src/server/index.cjs",
+            "replay/src/client/src/App.tsx",
+            "replay/test/query-api.test.cjs",
+        ):
+            self.assertIn(public_file, files)
+
+        for private_file in (
+            "replay/src/webproof-private/server/router.cjs",
+            "replay/src/webproof-private/client/ProofsList.tsx",
+            "replay/src/webproof-private/test/proofs-api.test.cjs",
         ):
             self.assertNotIn(private_file, files)
 
