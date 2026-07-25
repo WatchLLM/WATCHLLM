@@ -17,20 +17,20 @@ ANCHOR_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "REPLACE_WITH_WEBPROOF_D1_NAME"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "watchllm-webproof"
+database_id = "f4ab2056-0ead-4a4a-9166-ca8d4eba9b4c"
 
 [[r2_buckets]]
 binding = "PROOFS"
-bucket_name = "replace-with-webproof-proofs"
+bucket_name = "watchllm-webproof-proofs"
 
 [[queues.producers]]
 binding = "ANCHOR_QUEUE"
-queue = "replace-with-webproof-anchor"
+queue = "watchllm-webproof-anchor"
 
 [[queues.consumers]]
-queue = "replace-with-webproof-anchor"
+queue = "watchllm-webproof-anchor"
 max_batch_size = 10
 max_batch_timeout = 5
 max_retries = 8
-dead_letter_queue = "replace-with-webproof-anchor-dlq"
+dead_letter_queue = "watchllm-webproof-anchor-dlq"
