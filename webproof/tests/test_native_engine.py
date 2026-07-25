@@ -1,5 +1,7 @@
 import hashlib
 import json
+import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -63,17 +65,66 @@ def test_arbitrary_precision_integers_cross_native_boundary_without_truncation()
     assert accumulator.records[0]["enormous"] == enormous
 
 
-def test_rejects_circular_and_excessively_nested_values():
-    circular = []
-    circular.append(circular)
-    with pytest.raises(ValueError, match="circular references"):
-        LocalMerkleAccumulator().record({"value": circular})
+@pytest.mark.parametrize("kind", ["list", "dict", "mixed", "deep"])
+def test_recursive_inputs_fail_without_crashing_native_process(kind):
+    # A subprocess makes SIGSEGV a normal assertion failure instead of taking
+    # down the complete test run. This executes the installed/built extension,
+    # not a Python fallback.
+    program = r'''
+from watchllm_webproof.accumulator import LocalMerkleAccumulator, canonical_leaf
+import importlib.util
+import sys
 
+spec = importlib.util.find_spec("watchllm_webproof._native")
+if spec is None or not spec.origin or not spec.origin.endswith((".so", ".pyd")):
+    raise AssertionError(f"not using a built native extension: {spec}")
+
+kind = sys.argv[1]
+if kind == "list":
+    value = []
+    value.append(value)
+elif kind == "dict":
+    value = {}
+    value["self"] = value
+elif kind == "mixed":
+    value = []
+    child = {"back": value}
+    value.append(child)
+else:
+    value = None
+    for _ in range(10_000):
+        value = [value]
+
+for operation in (canonical_leaf, lambda item: LocalMerkleAccumulator().record(item)):
+    try:
+        operation({"value": value})
+    except ValueError as error:
+        expected = "nesting exceeds" if kind == "deep" else "circular references"
+        if expected not in str(error):
+            raise AssertionError(str(error)) from error
+    else:
+        raise AssertionError("recursive input was accepted")
+'''
+    result = subprocess.run(
+        [sys.executable, "-c", program, kind],
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        f"native subprocess exited {result.returncode}; "
+        f"stdout={result.stdout!r}, stderr={result.stderr!r}"
+    )
+
+
+def test_maximum_supported_depth_remains_deterministic():
     nested = None
-    for _ in range(130):
+    for _ in range(127):
         nested = [nested]
-    with pytest.raises(ValueError, match="nesting exceeds"):
-        LocalMerkleAccumulator().record({"value": nested})
+    record = {"value": nested}
+    expected = json.dumps(record, sort_keys=True, separators=(",", ":")).encode()
+    assert bytes(canonical_leaf(record)) == expected
 
 
 def test_rejects_lone_unicode_surrogates():

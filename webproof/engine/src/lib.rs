@@ -14,6 +14,7 @@ use sha2::{Digest, Sha256};
 
 const LEAF_DOMAIN: &[u8] = b"watchllm-webproof-local-leaf-v1\0";
 const NODE_DOMAIN: &[u8] = b"watchllm-webproof-local-node-v1\0";
+const MAX_COMMITMENT_DEPTH: usize = 128;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum JsonValue {
@@ -146,9 +147,11 @@ fn from_python_inner(
     depth: usize,
     active_containers: &mut HashSet<usize>,
 ) -> PyResult<JsonValue> {
-    if depth > 128 {
+    // Bound native recursion before inspecting or descending into the value.
+    // Container identities below separately reject cycles.
+    if depth > MAX_COMMITMENT_DEPTH {
         return Err(PyValueError::new_err(format!(
-            "{path}: nesting exceeds the maximum commitment depth of 128"
+            "{path}: nesting exceeds the maximum commitment depth of {MAX_COMMITMENT_DEPTH}"
         )));
     }
     if value.is_none() {

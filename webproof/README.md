@@ -46,7 +46,7 @@ A source install requires Python 3.10+, a Rust toolchain (Rust 1.74 or newer), a
 python -m pip install .
 ```
 
-The canonical commitment contract is byte-for-byte compatible with Python's historical `json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=True)` for supported values. Supported values are null, booleans, arbitrary-size integers, strings without lone surrogates, lists/tuples, and dictionaries with string keys. Floats and other Python objects are rejected to avoid non-portable commitments. Golden vectors live in `tests/vectors/commitment-v1.json`.
+The canonical commitment contract is byte-for-byte compatible with Python's historical `json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=True)` for supported values. Supported values are null, booleans, arbitrary-size integers, strings without lone surrogates, lists/tuples, and dictionaries with string keys. Floats and other Python objects are rejected to avoid non-portable commitments. Circular references and nesting beyond 128 child edges are rejected before canonical serialization, protecting the native stack while preserving deterministic output at every supported depth. Golden vectors live in `tests/vectors/commitment-v1.json`.
 
 The native extension targets CPython. A release must build and test wheels for each supported OS, architecture, and CPython version before publishing; a source distribution alone is not a substitute for that wheel matrix.
 
