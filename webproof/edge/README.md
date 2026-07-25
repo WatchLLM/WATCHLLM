@@ -20,7 +20,7 @@ Base Sepolia (`84532`) defaults; Base mainnet (`8453`) is explicit. The viem ada
 
 ## Setup (instructions only)
 
-Create D1, R2, producer Queue and DLQ; replace all `wrangler.toml` placeholders. New databases use `schema.sql`. Existing pre-mode databases must apply `migrations/0002_anchoring_mode.sql` before deploying this code; it rebuilds the constrained table and labels all historical rows `anchoring_mode=enabled`. Then set:
+Create D1, R2, producer Queue and DLQ; replace all `wrangler.toml` placeholders. New databases use `schema.sql`. Existing pre-mode databases must apply `migrations/0002_anchoring_mode.sql` before deploying this code; it rebuilds the constrained table and labels all historical rows `anchoring_mode=enabled`. Databases created before the D1-safe UUID constraint fix must then apply `migrations/0003_d1_uuid_check.sql`; the original long UUID `GLOB` exceeds D1's pattern-length limit and rejects every reservation. Then set:
 
 ```sh
 npx wrangler secret put API_KEY_PEPPER

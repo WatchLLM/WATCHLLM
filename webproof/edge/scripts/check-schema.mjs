@@ -1,6 +1,7 @@
 import {readFile} from 'node:fs/promises';import {spawnSync} from 'node:child_process';
 const schema=await readFile(new URL('../schema.sql',import.meta.url),'utf8');
 const migration=await readFile(new URL('../migrations/0002_anchoring_mode.sql',import.meta.url),'utf8');
+const uuidMigration=await readFile(new URL('../migrations/0003_d1_uuid_check.sql',import.meta.url),'utf8');
 const script=String.raw`import sqlite3,sys
 schema,migration=sys.stdin.read().split('\0',1)
 c=sqlite3.connect(':memory:');c.executescript(schema);c.execute('pragma foreign_keys=on')
@@ -31,6 +32,11 @@ stored=base.copy();stored[0]='00000001-0000-4000-8000-000000000000';stored[7]='r
 c.execute(f"insert into verification_batches({columns}) values({','.join('?'*20)})",stored)
 try:c.execute("update verification_batches set attempts=1 where verification_id=?",(stored[0],));raise AssertionError('stored row consumed an attempt')
 except sqlite3.IntegrityError:pass
+for bad_id in ['000000000000-4000-8000-000000000000','00000000-0000-6000-8000-000000000000','00000000-0000-4000-7000-000000000000','00000000-0000-4000-8000-00000000000Z']:
+ try:
+  row=base.copy();row[0]=bad_id;row[7]='bad-'+bad_id
+  c.execute(f"insert into verification_batches({columns}) values({','.join('?'*20)})",row);raise AssertionError('bad UUID accepted')
+ except sqlite3.IntegrityError:pass
 print('schema ownership, stored-only invariants, strict hashes, timestamps, atomic rollback, foreign keys, indexes, and 100/101 reset verified')`;
 const migrationScript=String.raw`import sqlite3,sys
 schema,migration=sys.stdin.read().split('\0',1)
@@ -43,4 +49,13 @@ assert c.execute("select anchoring_mode,status from verification_batches").fetch
 assert c.execute("select [from],[table] from pragma_foreign_key_list('proof_leaves')").fetchall()==[('verification_id','verification_batches')]
 assert c.execute('pragma foreign_key_check').fetchall()==[] and c.execute('select count(*) from proof_leaves').fetchone()==(1,)
 print('legacy migration preserves rows, marks them enabled, and retargets leaf foreign keys')`;
-for(const source of[script,migrationScript]){const run=spawnSync('python3',['-c',source],{input:`${schema}\0${migration}`,encoding:'utf8'});if(run.status!==0)throw new Error(run.stderr);process.stdout.write(run.stdout)}
+const uuidMigrationScript=String.raw`import sqlite3,sys
+schema,migration=sys.stdin.read().split('\0',1)
+old=schema.replace("verification_id=lower(verification_id) AND substr(verification_id,9,1)='-' AND substr(verification_id,14,1)='-' AND substr(verification_id,19,1)='-' AND substr(verification_id,24,1)='-' AND replace(verification_id,'-','') NOT GLOB '*[^0-9a-f]*' AND substr(verification_id,15,1) GLOB '[1-5]' AND substr(verification_id,20,1) GLOB '[89ab]'","verification_id GLOB '"+'[0-9a-f]'*8+'-'+'[0-9a-f]'*4+'-[1-5]'+'[0-9a-f]'*3+'-[89ab]'+'[0-9a-f]'*3+'-'+'[0-9a-f]'*12+"'")
+c=sqlite3.connect(':memory:');c.executescript(old);c.execute("insert into api_keys values(?,?,?,?,?)",('key','0'*32,bytes(32),1,None));c.executescript(migration)
+row=('00000000-0000-4000-8000-000000000000','key','0x'+'a'*64,'0x'+'b'*64,0,'s','0x'+'c'*64,'r2','processing','disabled','commitment_only','local_merkle_stub','1.0.0','1',0,'base-sepolia','84532',3,1000,1000)
+columns='verification_id,owner_key_id,merkle_root_hash,leaf_hash,leaf_index,session_id,payload_digest,r2_key,status,anchoring_mode,verification_mode,proof_type,proof_version,envelope_version,attestation,chain,network,required_confirmations,created_at,updated_at'
+c.execute(f"insert into verification_batches({columns}) values({','.join('?'*20)})",row)
+assert c.execute('pragma foreign_key_check').fetchall()==[] and c.execute('select count(*) from verification_batches').fetchone()==(1,)
+print('D1-safe UUID migration accepts a valid reservation and preserves foreign keys')`;
+for(const [source,input] of[[script,`${schema}\0${migration}`],[migrationScript,`${schema}\0${migration}`],[uuidMigrationScript,`${schema}\0${uuidMigration}`]]){const run=spawnSync('python3',['-c',source],{input,encoding:'utf8'});if(run.status!==0)throw new Error(run.stderr);process.stdout.write(run.stdout)}
