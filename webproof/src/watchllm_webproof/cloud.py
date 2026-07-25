@@ -19,13 +19,13 @@ from .exceptions import CloudSubmissionError
 _LEAF_DOMAIN = b"watchllm-webproof-local-leaf-v1\0"
 _NODE_DOMAIN = b"watchllm-webproof-local-node-v1\0"
 _TERMINAL_STATUSES = frozenset({"anchored", "failed"})
-_KNOWN_STATUSES = frozenset({"queued", "processing", "submitted", "anchored", "failed"})
+_KNOWN_STATUSES = frozenset({"stored", "queued", "processing", "submitted", "anchored", "failed"})
 _MAX_PAYLOAD_BYTES = 1_048_576
 _PUBLIC_RESPONSE_FIELDS = frozenset({
     "verification_id", "status", "verification_mode", "attestation", "envelope_version",
     "proof_type", "proof_version", "merkle_root", "payload_digest", "chain",
     "l2_transaction_hash", "tx_hash", "confirmations", "required_confirmations", "error",
-    "created_at", "updated_at",
+    "created_at", "updated_at", "anchoring_mode",
 })
 
 
@@ -233,11 +233,15 @@ class CloudClient:
                 raise ValueError(f"{name} must be a positive finite number")
         deadline = self._monotonic() + timeout
         interval = min(initial_interval, max_interval)
+        latest: CloudResult | None = None
         while True:
             remaining = deadline - self._monotonic()
             if remaining <= 0:
+                if latest is not None:
+                    return latest
                 raise CloudSubmissionError("cloud polling deadline expired before a status response")
             result = self._status(verification_id, request_timeout=min(self._timeout, remaining))
+            latest = result
             if result.status in _TERMINAL_STATUSES:
                 return result
             remaining = deadline - self._monotonic()

@@ -1,6 +1,6 @@
 # watchllm-webproof
 
-Public Python SDK for recording privacy-minimized HTTP request outcomes and producing a deterministic local Merkle commitment. Canonical serialization and SHA-256 Merkle construction are owned by a Rust engine exposed through PyO3.
+Public Python SDK for recording privacy-minimized HTTP request outcomes and producing a deterministic local Merkle commitment. Canonical serialization and incremental SHA-256 Merkle construction are owned by a pure Rust core exposed through separate PyO3 and WebAssembly adapters.
 
 > **Important:** `local_merkle_stub` is a local, non-attesting SHA-256 accumulator. It is **not** a TLS proof, remote-data proof, or cryptographic attestation. `reclaim` and `tlsnotary` values are declarative routing metadata only; this package contains no remote prover or verifier. Cloud submission, when explicitly requested, stores and anchors this commitment; it does not upgrade those semantics.
 
@@ -49,7 +49,7 @@ watchllm verify-url https://api.example.com/health \
 watchllm cloud-status VERIFICATION_UUID --endpoint https://webproof-edge.example --poll-timeout 30
 ```
 
-`--submit` sends strict envelope v1 to `POST /proof` and prints its verification ID/status. `--poll-timeout` optionally polls `GET /proof/:verification_id` with bounded exponential backoff; timeout returns the latest nonterminal status rather than polling indefinitely. `--chain base-mainnet` is always explicit; omission lets Edge use its configured default.
+`--submit` sends strict envelope v1 to `POST /proof` and prints its verification ID/status. Edge may return `stored` when its explicit anchoring mode is disabled: this means D1/R2 persistence only, not queued, submitted, anchored, verified, or attested. `--poll-timeout` treats `stored` as nonterminal and polls with bounded exponential backoff; timeout returns the latest nonterminal status rather than polling indefinitely. `--chain base-mainnet` is always explicit; omission lets Edge use its configured default.
 
 The Python interface separates envelope construction from network access:
 
@@ -82,7 +82,7 @@ A source install requires Python 3.10+, a Rust toolchain (Rust 1.74 or newer), a
 python -m pip install .
 ```
 
-The canonical commitment contract is byte-for-byte compatible with Python's historical `json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=True)` for supported values. Supported values are null, booleans, arbitrary-size integers, strings without lone surrogates, lists/tuples, and dictionaries with string keys. Floats and other Python objects are rejected to avoid non-portable commitments. Circular references and nesting beyond 128 child edges are rejected before canonical serialization, protecting the native stack while preserving deterministic output at every supported depth. Golden vectors live in `tests/vectors/commitment-v1.json`.
+The canonical commitment contract is byte-for-byte compatible with Python's historical `json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=True)` for supported values. Supported values are null, booleans, arbitrary-size integers, strings without lone surrogates, lists/tuples, and dictionaries with string keys. Floats and other Python objects are rejected to avoid non-portable commitments. Circular references and nesting beyond 128 child edges are rejected before canonical serialization, protecting the native stack while preserving deterministic output at every supported depth. Golden vectors live in `tests/vectors/commitment-v1.json`. The core keeps one completed subtree per set bit in the leaf count, so append and root retrieval use O(log n) hashes and O(log n) hash storage. Root folding intentionally reproduces the historical algorithm: at every level with an unpaired rightmost node, that node is duplicated before promotion. This matters for non-power-of-two counts (including duplication at multiple levels) and is regression-tested against the original full-tree rebuild at every deterministic-vector prefix and across generated inputs.
 
 The native extension targets CPython. A release must build and test wheels for each supported OS, architecture, and CPython version before publishing; a source distribution alone is not a substitute for that wheel matrix.
 
@@ -111,8 +111,13 @@ python -m pip install -e '.[test]'
 cargo fmt --manifest-path engine/Cargo.toml --all -- --check
 cargo clippy --manifest-path engine/Cargo.toml --all-targets --locked -- -D warnings
 cargo test --manifest-path engine/Cargo.toml --locked
+cargo build --manifest-path engine/Cargo.toml --target wasm32-unknown-unknown \
+  --release --no-default-features --features wasm
+cd engine/wasm && npm run build && npm test
 python -m pytest
 python -m build
 ```
 
-The Merkle engine has no WebAssembly-facing API and is bound directly to CPython through PyO3. A `wasm32-unknown-unknown` build is therefore not a useful release artifact; if browser support is required later, the pure commitment core should be split from the PyO3 adapter and given a separately reviewed Wasm API.
+## WebAssembly API
+
+The `wasm` feature builds a real `wasm-bindgen` API without linking PyO3. `canonical_leaf_json(recordJson)` and `WasmAccumulator.append_json(recordJson)` accept JSON text rather than JavaScript objects; this avoids rounding integers such as `9007199254740993` before Rust receives them. `WasmAccumulator.root_hex()` and `leaf_count()` expose the same commitment state as Python/native. Floats and non-object records are rejected. `engine/wasm/parity.test.mjs` consumes the shared Python/native golden vectors and tests the generated Node.js WebAssembly package.

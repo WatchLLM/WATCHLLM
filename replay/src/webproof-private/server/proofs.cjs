@@ -8,7 +8,7 @@ const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a
 const SESSION_RE = /^[A-Za-z0-9._:-]{1,64}$/;
 const RUN_RE = /^[A-Za-z0-9._:-]{1,128}$/;
 const NODE_DOMAIN = Buffer.from('watchllm-webproof-local-node-v1\0');
-const STATUSES = new Set(['queued', 'processing', 'submitted', 'anchored', 'failed']);
+const STATUSES = new Set(['stored', 'queued', 'processing', 'submitted', 'anchored', 'failed']);
 const CHAINS = new Set(['base-sepolia', 'base-mainnet']);
 const MAX_RAW = 16_384;
 const REDACT_KEY = /authorization|cookie|secret|token|password|api[_-]?key|signature|r2|signer|rpc/i;
@@ -164,7 +164,7 @@ function constantToken(req, expected) {
   const supplied = req.get('X-Replay-Ingest-Token') || '';
   if (!expected || !supplied || supplied.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) throw input('not found', 404);
 }
-function statusRank(status) { return ({ queued: 0, processing: 1, submitted: 2, anchored: 3, failed: 3 })[status] ?? -1; }
+function statusRank(status) { return ({ stored: 0, queued: 1, processing: 2, submitted: 3, anchored: 4, failed: 4 })[status] ?? -1; }
 function applyWorker(db, row, data, now) {
   if (!data || typeof data !== 'object' || data.verification_id !== row.id || !STATUSES.has(data.status) || data.verification_mode !== 'commitment_only' || data.attestation !== false || normalizeHash(data.merkle_root, 'merkle_root') !== row.merkle_root || !CHAINS.has(data.chain)) throw input('invalid upstream response', 502);
   let nextStatus = row.status;

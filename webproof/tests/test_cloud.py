@@ -87,6 +87,49 @@ def test_submit_status_and_bounded_poll_use_bearer_without_exposing_it():
 
 
 @responses.activate
+def test_stored_only_status_is_honest_and_remains_nonterminal_for_polling():
+    responses.add(
+        responses.POST,
+        "https://edge.test/proof",
+        json={"verification_id": UUID, "status": "stored", "anchoring_mode": "disabled"},
+        status=202,
+    )
+    with CloudClient("https://edge.test", "owner.secret") as client:
+        result = client.submit({"envelope_version": "1"})
+    assert result.status == "stored"
+    assert result.data["anchoring_mode"] == "disabled"
+
+
+def test_poll_returns_latest_stored_result_when_sleep_reaches_deadline():
+    class Response:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"verification_id": UUID, "status": "stored", "anchoring_mode": "disabled"}
+
+    class Session:
+        def __init__(self):
+            self.calls = 0
+
+        def request(self, *args, **kwargs):
+            self.calls += 1
+            return Response()
+
+    clock = [0.0]
+    session = Session()
+
+    def sleep(seconds):
+        clock[0] += seconds
+
+    with CloudClient("https://edge.test", "owner.secret", session=session, sleep=sleep, monotonic=lambda: clock[0]) as client:
+        result = client.poll(UUID, timeout=1, initial_interval=1, max_interval=1)
+    assert result.status == "stored"
+    assert result.data["anchoring_mode"] == "disabled"
+    assert session.calls == 1
+
+
+@responses.activate
 def test_transport_and_http_errors_are_sanitized():
     secret = "owner.super-secret-value"
     responses.add(responses.POST, "https://edge.test/proof", body=f"bad {secret}", status=401)

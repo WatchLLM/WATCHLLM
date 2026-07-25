@@ -1,6 +1,7 @@
 import { authenticate } from './auth';
-import { consumeRateLimit, getProof, markIngestionFailed, markQueued, publicProof, reserveProof } from './db';
+import { consumeRateLimit, getProof, markIngestionFailed, markQueued, markStored, publicProof, reserveProof } from './db';
 import { consume } from './queue';
+import { loadConfig } from './config';
 import { HttpError, MAX_DECODED_BYTES, MAX_ENVELOPE_BYTES, NODE_DOMAIN, type AnchorMessage, type Env, type ProofEnvelope, type ValidatedProof } from './types';
 const encoder = new TextEncoder();
 function json(value: unknown, status = 200, headers: HeadersInit = {}): Response { return Response.json(value, { status, headers: new Headers({ 'Cache-Control': 'no-store', ...(headers as Record<string,string>) }) }); }
@@ -42,13 +43,24 @@ async function validateEnvelope(raw: unknown, env: Env): Promise<ValidatedProof>
 }
 async function readJson(request: Request): Promise<unknown> { const declared = Number(request.headers.get('content-length')); if (Number.isFinite(declared) && declared > MAX_ENVELOPE_BYTES) throw new HttpError(413,'request envelope exceeds 1.5 MiB'); const bytes = new Uint8Array(await request.arrayBuffer()); if (bytes.byteLength > MAX_ENVELOPE_BYTES) throw new HttpError(413,'request envelope exceeds 1.5 MiB'); try { return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)); } catch { throw new HttpError(400,'body must be valid UTF-8 JSON'); } }
 async function postProof(request: Request, env: Env): Promise<Response> {
+  const config=loadConfig(env);
   const raw=await readJson(request); const keyId = await authenticate(request,env); const proof = await validateEnvelope(raw,env); await consumeRateLimit(env,keyId);
   const id = crypto.randomUUID(); const r2Key = `proofs/${id}/${proof.payloadDigest.slice(2)}`; const now = Date.now(); const reservation = await reserveProof(env,proof,keyId,id,r2Key,now);
-  if (!reservation.created && ['queued','submitted','anchored'].includes(reservation.row.status)) return json(publicProof(reservation.row),202);
-  if (!reservation.created && reservation.row.status === 'processing') throw new HttpError(503,'matching ingestion is still in progress',{ 'Retry-After':'1' });
+  if (!reservation.created && ['stored','queued','submitted','anchored'].includes(reservation.row.status)) return json(publicProof(reservation.row),202);
+  const repairingDisabled = !reservation.created && reservation.row.status === 'processing' && config.anchoringMode === 'disabled' && reservation.row.anchoring_mode === 'disabled';
+  if (!reservation.created && reservation.row.status === 'processing' && !repairingDisabled) throw new HttpError(503,'matching ingestion is still in progress',{ 'Retry-After':'1' });
   const targetId = reservation.row.verification_id; const targetKey = reservation.row.r2_key;
   try { await env.PROOFS.put(targetKey,proof.payload,{httpMetadata:{contentType:'application/octet-stream'},customMetadata:{digest:proof.payloadDigest}}); }
-  catch { await markIngestionFailed(env,targetId,'proof object storage failed',Date.now()); throw new HttpError(503,'durable proof storage unavailable'); }
+  catch { if (!repairingDisabled) await markIngestionFailed(env,targetId,'proof object storage failed',Date.now()); throw new HttpError(503,'durable proof storage unavailable'); }
+  if (config.anchoringMode === 'disabled') {
+    try {
+      const changed=await markStored(env,targetId,Date.now());
+      const row=await getProof(env,targetId,keyId);
+      if (row?.status === 'stored' && row.anchoring_mode === 'disabled') return json(publicProof(row),202);
+      if (!changed || !row) throw new HttpError(503,'durable stored-only state unavailable');
+    } catch(error) { if(error instanceof HttpError)throw error; throw new HttpError(503,'durable stored-only state unavailable'); }
+    throw new HttpError(503,'durable stored-only state unavailable');
+  }
   const pointer: AnchorMessage = {verification_id:targetId,r2_key:targetKey,payload_digest:proof.payloadDigest,merkle_root:proof.merkle_root,chain:proof.chain};
   try { await env.ANCHOR_QUEUE.send(pointer); }
   catch { try { await env.PROOFS.delete(targetKey); } catch { /* orphan lifecycle cleanup is documented */ } await markIngestionFailed(env,targetId,'queue handoff failed; retry submission',Date.now()); throw new HttpError(503,'durable queue handoff unavailable'); }
@@ -57,6 +69,6 @@ async function postProof(request: Request, env: Env): Promise<Response> {
   if (row.status === 'processing') return json({...publicProof(row),status:'queued'},202);
   return json(publicProof(row),202);
 }
-async function fetchHandler(request:Request,env:Env):Promise<Response>{try{const url=new URL(request.url);if(url.pathname==='/proof'){if(request.method!=='POST')return json({error:'method not allowed'},405,{Allow:'POST'});const declared=request.headers.get('content-length');if(declared!==null&&/^[0-9]+$/.test(declared)&&Number(declared)>MAX_ENVELOPE_BYTES)throw new HttpError(413,'request envelope exceeds 1.5 MiB');return await postProof(request,env)}const match=/^\/proof\/([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/.exec(url.pathname);if(match){if(request.method!=='GET')return json({error:'method not allowed'},405,{Allow:'GET'});const keyId=await authenticate(request,env);const row=await getProof(env,match[1]??'',keyId);return row?json(publicProof(row)):json({error:'not found'},404)}return json({error:'not found'},404)}catch(error){if(error instanceof HttpError)return json({error:error.message},error.status,error.headers);console.error('webproof edge request failed');return json({error:'internal error'},500)}}
+async function fetchHandler(request:Request,env:Env):Promise<Response>{try{loadConfig(env);const url=new URL(request.url);if(url.pathname==='/proof'){if(request.method!=='POST')return json({error:'method not allowed'},405,{Allow:'POST'});const declared=request.headers.get('content-length');if(declared!==null&&/^[0-9]+$/.test(declared)&&Number(declared)>MAX_ENVELOPE_BYTES)throw new HttpError(413,'request envelope exceeds 1.5 MiB');return await postProof(request,env)}const match=/^\/proof\/([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/.exec(url.pathname);if(match){if(request.method!=='GET')return json({error:'method not allowed'},405,{Allow:'GET'});const keyId=await authenticate(request,env);const row=await getProof(env,match[1]??'',keyId);return row?json(publicProof(row)):json({error:'not found'},404)}return json({error:'not found'},404)}catch(error){if(error instanceof HttpError)return json({error:error.message},error.status,error.headers);console.error('webproof edge request failed');return json({error:'internal error'},500)}}
 export { validateEnvelope, decodeBase64, normalizeHash, fetchHandler };
 export default { fetch: fetchHandler, queue: consume } satisfies ExportedHandler<Env, AnchorMessage>;

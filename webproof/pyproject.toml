@@ -43,7 +43,7 @@ watchllm = "watchllm_webproof.cli:main"
 manifest-path = "engine/Cargo.toml"
 module-name = "watchllm_webproof._native"
 python-source = "src"
-features = ["pyo3/extension-module"]
+features = ["python"]
 strip = true
 
 [tool.pytest.ini_options]

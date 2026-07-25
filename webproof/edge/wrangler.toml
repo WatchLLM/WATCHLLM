@@ -5,6 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = false
 
 [vars]
+ANCHORING_MODE = "disabled"
 CHAIN = "base-sepolia"
 RPC_URLS = "https://sepolia.base.org"
 CONFIRMATIONS = "3"
