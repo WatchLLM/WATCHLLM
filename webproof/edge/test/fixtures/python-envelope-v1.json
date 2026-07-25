@@ -1,0 +1,61 @@
+{
+  "_python_records": [
+    {
+      "domain": "api.example.com",
+      "error_type": null,
+      "method": "GET",
+      "path": "/first",
+      "port": 443,
+      "prover_mode": null,
+      "scheme": "https",
+      "sensitivity": null,
+      "session_ttl": null,
+      "status_code": 200
+    },
+    {
+      "domain": "api.example.com",
+      "error_type": null,
+      "method": "POST",
+      "path": "/second",
+      "port": 443,
+      "prover_mode": "reclaim",
+      "scheme": "https",
+      "sensitivity": "high",
+      "session_ttl": 3600,
+      "status_code": 201
+    },
+    {
+      "domain": "api.example.com",
+      "error_type": null,
+      "method": "GET",
+      "path": "/third",
+      "port": 443,
+      "prover_mode": null,
+      "scheme": "https",
+      "sensitivity": null,
+      "session_ttl": null,
+      "status_code": 503
+    }
+  ],
+  "attestation": false,
+  "chain": "base-sepolia",
+  "envelope_version": "1",
+  "leaf_data": {
+    "path": "/third",
+    "response_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "target_domain": "api.example.com",
+    "timestamp": 1784976000000
+  },
+  "leaf_hash": "1186ea28d91649b44dd8ca75db3cbd95b6f3d03d31457b42ca59cbb4486ed8c4",
+  "leaf_index": 2,
+  "merkle_path": [
+    "1186ea28d91649b44dd8ca75db3cbd95b6f3d03d31457b42ca59cbb4486ed8c4",
+    "ec99ab6c6a276c24109b7d14370d588de19ec8c71a21c847ae81fa0d5dd0f239"
+  ],
+  "merkle_root": "a95cc6eb9480d79939f0833b492f369e4e929bf7bb0c76dc9302053bd2f19daa",
+  "proof_payload": "eyJwcm9vZiI6eyJhZ2dyZWdhdGlvbl9lbmFibGVkIjp0cnVlLCJhbGdvcml0aG0iOiJzaGEyNTYtbG9jYWwtbWVya2xlLXYxIiwiYXR0ZXN0YXRpb24iOmZhbHNlLCJsZWFmX2NvdW50IjozLCJtZXJrbGVfcm9vdCI6ImE5NWNjNmViOTQ4MGQ3OTkzOWYwODMzYjQ5MmYzNjllNGU5MjliZjdiYjBjNzZkYzkzMDIwNTNiZDJmMTlkYWEiLCJwcm9vZl90eXBlIjoibG9jYWxfbWVya2xlX3N0dWIiLCJwcm9vZl92ZXJzaW9uIjoiMS4wLjAiLCJzZXNzaW9uX2lkIjoicHl0aG9uLWVkZ2UtY29udHJhY3QifSwicmVjb3JkcyI6W3siZG9tYWluIjoiYXBpLmV4YW1wbGUuY29tIiwiZXJyb3JfdHlwZSI6bnVsbCwibWV0aG9kIjoiR0VUIiwicGF0aCI6Ii9maXJzdCIsInBvcnQiOjQ0MywicHJvdmVyX21vZGUiOm51bGwsInNjaGVtZSI6Imh0dHBzIiwic2Vuc2l0aXZpdHkiOm51bGwsInNlc3Npb25fdHRsIjpudWxsLCJzdGF0dXNfY29kZSI6MjAwfSx7ImRvbWFpbiI6ImFwaS5leGFtcGxlLmNvbSIsImVycm9yX3R5cGUiOm51bGwsIm1ldGhvZCI6IlBPU1QiLCJwYXRoIjoiL3NlY29uZCIsInBvcnQiOjQ0MywicHJvdmVyX21vZGUiOiJyZWNsYWltIiwic2NoZW1lIjoiaHR0cHMiLCJzZW5zaXRpdml0eSI6ImhpZ2giLCJzZXNzaW9uX3R0bCI6MzYwMCwic3RhdHVzX2NvZGUiOjIwMX0seyJkb21haW4iOiJhcGkuZXhhbXBsZS5jb20iLCJlcnJvcl90eXBlIjpudWxsLCJtZXRob2QiOiJHRVQiLCJwYXRoIjoiL3RoaXJkIiwicG9ydCI6NDQzLCJwcm92ZXJfbW9kZSI6bnVsbCwic2NoZW1lIjoiaHR0cHMiLCJzZW5zaXRpdml0eSI6bnVsbCwic2Vzc2lvbl90dGwiOm51bGwsInN0YXR1c19jb2RlIjo1MDN9XX0=",
+  "proof_type": "local_merkle_stub",
+  "proof_version": "1.0.0",
+  "session_id": "python-edge-contract",
+  "verification_mode": "commitment_only"
+}

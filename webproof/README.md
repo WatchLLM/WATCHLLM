@@ -2,7 +2,7 @@
 
 Public Python SDK for recording privacy-minimized HTTP request outcomes and producing a deterministic local Merkle commitment. Canonical serialization and SHA-256 Merkle construction are owned by a Rust engine exposed through PyO3.
 
-> **Important:** `local_merkle_stub` is a local, non-attesting SHA-256 accumulator. It is **not** a TLS proof, remote-data proof, or cryptographic attestation. `reclaim` and `tlsnotary` values are declarative routing metadata only; this package contains no remote prover or verifier.
+> **Important:** `local_merkle_stub` is a local, non-attesting SHA-256 accumulator. It is **not** a TLS proof, remote-data proof, or cryptographic attestation. `reclaim` and `tlsnotary` values are declarative routing metadata only; this package contains no remote prover or verifier. Cloud submission, when explicitly requested, stores and anchors this commitment; it does not upgrade those semantics.
 
 ## Quickstart
 
@@ -35,6 +35,42 @@ async with VerifiableAgent(config_path="config.json") as agent:
 ```
 
 `get`, `post`, and `request` use `requests`; `aget`, `apost`, and `arequest` use `httpx`. Only HTTP and HTTPS are supported. The SDK never records headers, cookies, request/response bodies, URL credentials, or query strings. It records method, normalized domain, effective port, path, status/error type, and selected route metadata. Explicit streaming is never eagerly consumed.
+
+## Explicit cloud submission
+
+Local-only operation remains the default: constructing an agent, making requests, calling `proof()`, and running `watchllm verify-url URL` never contact WebProof Edge. Remote I/O requires an explicit `CloudClient` call or CLI `--submit`/`cloud-status` command. Endpoints must use HTTPS, redirects are disabled, and API keys are read from an environment variable by the CLI and are never included in output, response bodies, or SDK exception messages.
+
+```bash
+export WATCHLLM_API_KEY='key_id.secret'
+watchllm verify-url https://api.example.com/health \
+  --submit https://webproof-edge.example \
+  --response-hash 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef \
+  --poll-timeout 30
+watchllm cloud-status VERIFICATION_UUID --endpoint https://webproof-edge.example --poll-timeout 30
+```
+
+`--submit` sends strict envelope v1 to `POST /proof` and prints its verification ID/status. `--poll-timeout` optionally polls `GET /proof/:verification_id` with bounded exponential backoff; timeout returns the latest nonterminal status rather than polling indefinitely. `--chain base-mainnet` is always explicit; omission lets Edge use its configured default.
+
+The Python interface separates envelope construction from network access:
+
+```python
+import time
+from watchllm_webproof import CloudClient, build_edge_envelope
+
+# agent has already recorded one or more outcomes
+payload = build_edge_envelope(
+    agent.records,
+    agent.proof(),
+    leaf_index=0,
+    response_hash="01" * 32,
+    observed_at=int(time.time() * 1000),
+)
+with CloudClient("https://webproof-edge.example", api_key) as cloud:
+    result = cloud.submit(payload)
+    result = cloud.poll(result.verification_id, timeout=30)
+```
+
+Envelope v1 has a semantic limitation worth making explicit: native records commit to request outcome metadata but intentionally contain neither response bytes nor timestamps. Edge nevertheless requires `response_hash` and `observed_at`; callers must supply them, and Edge stores them with `metadata_bound=0`. They are compatibility metadata **not bound by the selected leaf and not attested**. The uploaded canonical payload contains the native proof and all native record snapshots; the selected record supplies `target_domain` and path, and the SDK derives its inclusion path using the exact Rust leaf/node domain contract.
 
 ## Native engine and installation
 
