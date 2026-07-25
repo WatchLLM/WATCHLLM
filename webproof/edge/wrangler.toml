@@ -2,7 +2,7 @@ name = "watchllm-webproof-edge"
 main = "src/index.ts"
 compatibility_date = "2026-07-23"
 compatibility_flags = ["nodejs_compat"]
-workers_dev = false
+workers_dev = true
 
 [vars]
 ANCHORING_MODE = "disabled"
