@@ -15,7 +15,9 @@ function parseBearer(request: Request): { keyId: string; secret: string } {
   if (!authorization?.startsWith('Bearer ') || authorization.includes(',')) throw new HttpError(401, 'unauthorized', { 'WWW-Authenticate': 'Bearer' });
   const token = authorization.slice(7); const separator = token.indexOf('.');
   if (separator < 1 || separator === token.length - 1 || token.length > 512) throw new HttpError(401, 'unauthorized', { 'WWW-Authenticate': 'Bearer' });
-  return { keyId: token.slice(0, separator), secret: token.slice(separator + 1) };
+  const keyId = token.slice(0, separator); const secret = token.slice(separator + 1);
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(keyId) || secret.length > 447 || /\s/.test(secret)) throw new HttpError(401, 'unauthorized', { 'WWW-Authenticate': 'Bearer' });
+  return { keyId, secret };
 }
 export async function authenticate(request: Request, env: Env): Promise<string> {
   const { keyId, secret } = parseBearer(request);

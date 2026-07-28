@@ -38,7 +38,9 @@ async function validateEnvelope(raw: unknown, env: Env): Promise<ValidatedProof>
   let computed = leaf_hash; let index = value.leaf_index as number;
   for (const sibling of merkle_path) { computed = (index & 1) === 0 ? await nodeHash(computed,sibling) : await nodeHash(sibling,computed); index = Math.floor(index/2); }
   if (computed !== merkle_root) throw new HttpError(400,'merkle inclusion path does not match root');
-  const chain = value.chain ?? (env.CHAIN === 'base-mainnet' ? 'base-mainnet' : 'base-sepolia');
+  const chain = value.chain ?? env.CHAIN;
+  if (chain !== 'base-sepolia' && chain !== 'base-mainnet') throw new HttpError(400,'chain must be base-sepolia or base-mainnet');
+  if (chain !== env.CHAIN) throw new HttpError(409,'proof chain does not match the configured chain');
   return { envelope_version:'1',proof_version:'1.0.0',proof_type:'local_merkle_stub',verification_mode:'commitment_only',attestation:false,merkle_root,leaf_hash,leaf_index:value.leaf_index as number,merkle_path,session_id:value.session_id,leaf_data:{...metadata,target_domain:metadata.target_domain.toLowerCase(),response_hash},payload,payloadDigest,chain };
 }
 async function readJson(request: Request): Promise<unknown> { const declared = Number(request.headers.get('content-length')); if (Number.isFinite(declared) && declared > MAX_ENVELOPE_BYTES) throw new HttpError(413,'request envelope exceeds 1.5 MiB'); const bytes = new Uint8Array(await request.arrayBuffer()); if (bytes.byteLength > MAX_ENVELOPE_BYTES) throw new HttpError(413,'request envelope exceeds 1.5 MiB'); try { return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)); } catch { throw new HttpError(400,'body must be valid UTF-8 JSON'); } }
