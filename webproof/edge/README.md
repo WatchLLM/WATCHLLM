@@ -16,7 +16,7 @@ D1 is authoritative. R2/Queue failures mark a retryable failed reservation; queu
 
 ## Chain and retries
 
-Base Sepolia (`84532`) defaults; Base mainnet (`8453`) is explicit. The viem adapter estimates EIP-1559 gas/fees immediately before signing real `anchor(bytes32)` calldata. Missing/placeholder contract, key, or chain mismatch fails closed. Execution-fee ceilings defer with Queue exponential backoff+jitter. Signed hash+nonce persist before raw broadcast; uncertain broadcasts are reconciled, never blindly replaced. Configured confirmations are required for `anchored`. RPC fallback never switches chains. Single-root transactions are v1; production economics require epoch super-root batching.
+Base Sepolia (`84532`) defaults; Base mainnet (`8453`) is explicit. The viem adapter estimates EIP-1559 gas/fees immediately before signing real `anchor(bytes32)` calldata. Missing/placeholder contract, key, or chain mismatch fails closed. Execution-fee ceilings defer with Queue exponential backoff+jitter. Signed hash+nonce persist before raw broadcast; uncertain broadcasts are reconciled, never blindly replaced. Configured confirmations are required for `anchored`. RPC fallback never switches chains. The checked-in Queue consumer sets `max_concurrency = 1` because v1 uses one signing account and selects pending nonces client-side; do not raise it without a nonce-coordination design. Single-root transactions are v1; production economics require epoch super-root batching.
 
 ## Setup (instructions only)
 
