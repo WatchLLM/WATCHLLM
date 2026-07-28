@@ -50,6 +50,13 @@ jobs:
           cargo fmt --manifest-path engine/Cargo.toml --all -- --check
           cargo clippy --manifest-path engine/Cargo.toml --all-targets --locked -- -D warnings
           cargo test --manifest-path engine/Cargo.toml --locked
+      - name: Validate browser/WASM parity
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-bindgen-cli --version 0.2.125 --locked
+          cd engine/wasm
+          npm run build
+          npm test
       - name: Install and test SDK
         run: |
           python -m pip install -e '.[test]'
@@ -64,6 +71,24 @@ jobs:
               names = archive.namelist()
           assert any(name.startswith("watchllm_webproof/_native") for name in names), names
           PY
+
+  webproof-anchor-contract-private:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webproof/contract
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: webproof/contract/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:abi
+      - run: npm audit --omit=dev --audit-level=high
 
   kernel:
     runs-on: ubuntu-latest
@@ -123,8 +148,12 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
-      - name: Build frontend
-        run: npm run build:frontend
+      - name: Type check
+        run: npm run typecheck
+      - name: Build public and private frontends
+        run: |
+          npm run build:frontend
+          npx --no-install vite build --config src/webproof-private/vite.config.ts
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
