@@ -19,7 +19,7 @@
     "eslint": "^10.8.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.65.0",
-    "vitest": "4.1.10",
+    "vitest": "4.1.12",
     "wrangler": "4.113.0"
   },
   "engines": {
