@@ -9,6 +9,8 @@ on:
       - 'schemas/**'
       - 'vscode/**'
       - 'examples/**'
+      - 'webproof/**'
+      - 'replay/**'
       - 'CHANGELOG.md'
       - 'CONTRIBUTING.md'
       - '.github/CODEOWNERS'
@@ -22,6 +24,7 @@ on:
       - '.github/scripts/test-oss-export.py'
       - '.github/workflows/oss-sync.yml'
       - '.github/OSS_SYNC.md'
+  workflow_dispatch:
 
 permissions:
   contents: read
