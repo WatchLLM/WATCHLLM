@@ -22,9 +22,14 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
-        with:
-          components: clippy, rustfmt
+        # The organization's Actions policy only allows GitHub-owned, WatchLLM-owned,
+        # Marketplace-verified actions, or pypa/gh-action-pypi-publish. GitHub's
+        # Ubuntu runners ship rustup, so install the toolchain without a third-party
+        # action; dtolnay/rust-toolchain is not on the allowlist and made every run
+        # fail at startup.
+        run: |
+          rustup toolchain install stable --profile minimal --component clippy,rustfmt
+          rustup default stable
       - name: Validate native engine
         run: |
           cargo fmt --manifest-path engine/Cargo.toml --all -- --check
