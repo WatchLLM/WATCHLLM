@@ -29,6 +29,10 @@ def native_fixture_envelope():
 
 
 def test_python_generated_cross_boundary_fixture_is_current():
+    if not FIXTURE.exists():
+        # webproof/edge is proprietary and excluded from the OSS export, so the
+        # committed edge fixture is not present there. Skip instead of failing.
+        pytest.skip("edge fixture not available in this export")
     generated, fixture = native_fixture_envelope()
     assert generated == fixture
     assert json.loads(__import__("base64").b64decode(generated["proof_payload"]))["proof"]["leaf_count"] == 3
