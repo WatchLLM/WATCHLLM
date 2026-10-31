@@ -11,6 +11,9 @@ pushes directly to public `main`.
    `WatchLLM/watchllm-oss`, with:
    - **Contents: Read and write** (push the automation branch)
    - **Pull requests: Read and write** (create/update the export PR)
+   - **Workflows: Read and write** (the export includes
+     `.github/workflows/ci.yml` and `.github/workflows/publish-kernel.yml`;
+     GitHub rejects a push that creates or updates workflow files without this)
    - **Metadata: Read** (implicit)
 3. Protect `main` in the public repository:
    - require pull requests;
@@ -18,9 +21,13 @@ pushes directly to public `main`.
    - disallow force pushes and deletion;
    - require at least one human approval when another maintainer is available.
 
-The token does not need administration, workflows, packages, issues, or access
-to any other repository. Repository rules remain the enforcement boundary; the
+The token does not need administration, packages, issues, or access to any
+other repository. Repository rules remain the enforcement boundary; the
 workflow's private-repository `GITHUB_TOKEN` has read-only contents permission.
+
+If the push fails with `refusing to allow a Personal Access Token to create or
+update workflow ... without 'workflow' scope`, the Workflows permission is
+missing. For a classic PAT, the equivalent is the `workflow` scope.
 
 ## Branch behavior
 
