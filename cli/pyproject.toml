@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-completion = ["click>=8.0"]
+completion = ["click>=8.5.0"]
 
 [project.scripts]
 watchllm = "watchllm.cli:main"
